@@ -42,9 +42,7 @@
                     <span id="attendance-status-dot"
                         class="h-1.5 w-1.5 rounded-full @if ($attendanceStatus === 'not_started') bg-gray-400 @elseif ($attendanceStatus === 'working') bg-cyan-500 @else bg-green-500 @endif"></span>
                     <span id="attendance-status-text">
-                        @if ($attendanceStatus === 'not_started')
-                            Not Started
-                        @elseif ($attendanceStatus === 'working')
+                        @if ($attendanceStatus === 'working')
                             Working
                         @else
                             Completed

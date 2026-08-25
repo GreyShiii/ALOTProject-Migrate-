@@ -46,10 +46,6 @@
                 <option value="completed">
                     Completed
                 </option>
-
-                <option value="not_started">
-                    Not Started
-                </option>
             </select>
 
         </div>

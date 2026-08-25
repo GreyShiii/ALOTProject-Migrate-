@@ -62,15 +62,6 @@
         <div class="hidden overflow-x-auto md:block">
             <table class="w-full table-fixed divide-y divide-gray-200">
 
-                <colgroup>
-                    <col class="w-[27%]">
-                    <col class="w-[17%]">
-                    <col class="w-[14%]">
-                    <col class="w-[12%]">
-                    <col class="w-[7%]">
-                    <col class="w-[18%]">
-                </colgroup>
-
                 <thead class="bg-gray-50">
                     <tr>
                         <th

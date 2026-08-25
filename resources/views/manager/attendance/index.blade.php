@@ -63,8 +63,6 @@
                         Completed
                     @elseif ($todayAttendance?->time_in)
                         Working
-                    @else
-                        Not Started
                     @endif
 
                 </p>
@@ -192,10 +190,6 @@
                     <option value="completed">
                         Completed
                     </option>
-
-                    <option value="not_started">
-                        Not Started
-                    </option>
                 </select>
 
             </div>
@@ -290,10 +284,6 @@
 
                     <option value="completed">
                         Completed
-                    </option>
-
-                    <option value="not_started">
-                        Not Started
                     </option>
                 </select>
 

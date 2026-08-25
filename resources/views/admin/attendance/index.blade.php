@@ -65,7 +65,6 @@
                 <option value="">All statuses</option>
                 <option value="completed">Completed</option>
                 <option value="working">Working</option>
-                <option value="not_started">Not Started</option>
             </select>
 
         </div>
