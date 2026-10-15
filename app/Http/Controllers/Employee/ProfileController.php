@@ -7,6 +7,7 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
@@ -16,15 +17,20 @@ class ProfileController extends Controller
 
         $employee = Employee::with([
             'department',
-            'manager',
+            'manager.user',
         ])
             ->where('user_id', $user->id)
             ->first();
 
-        return view('employee.profile.index', compact(
-            'user',
-            'employee'
-        ));
+        return Inertia::render('Employee/Profile/Index', [
+            'user' => [...$user->toArray(), 'role' => $user->primaryRoleName()],
+            'employee' => $employee ? [
+                ...$employee->toArray(),
+                'hire_date' => $employee->hire_date?->format('Y-m-d'),
+            ] : null,
+            'actionUrl' => route('employee.profile.update'),
+            'passwordUrl' => route('employee.profile.password.update'),
+        ]);
     }
 
     public function update(Request $request)
@@ -58,7 +64,7 @@ class ProfileController extends Controller
 
         $user->load([
             'employee.department',
-            'employee.manager',
+            'employee.manager.user',
         ]);
 
         return response()->json([
