@@ -4,61 +4,77 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
+
+        return Inertia::render('Employee/Attendance/Index', [
+            'filters' => $request->only(['search', 'date', 'status']),
+            'dataUrl' => route('employee.attendance.data'),
+            'timezone' => config('app.timezone'),
+        ]);
+    }
+
+    public function data(Request $request)
+    {
+        $employee = Auth::user()->employee;
+        abort_unless($employee, 404, 'Employee record not found.');
+
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'status' => ['nullable', 'in:working,completed,not_started'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
 
         $query = Attendance::where('employee_id', $employee->id);
 
-        if (request('search')) {
-            $search = request('search');
-
-            $query->where(function ($query) use ($search) {
-                $query->whereDate('date', $search)
-                    ->orWhereRaw("DATE_FORMAT(date, '%M %e, %Y') LIKE ?", ["%{$search}%"])
-                    ->orWhereRaw("DATE_FORMAT(date, '%b %e, %Y') LIKE ?", ["%{$search}%"]);
-            });
-        }
-
-        if (request('date')) {
-            $query->whereDate('date', request('date'));
-        }
-
-        if (request('status')) {
-
-            if (request('status') === 'working') {
-                $query->whereNotNull('time_in')
-                    ->whereNull('time_out');
+        if ($request->filled('search')) {
+            $search = trim($filters['search']);
+            foreach (['!F j, Y', '!M j, Y'] as $format) {
+                $date = \DateTimeImmutable::createFromFormat($format, $search);
+                if ($date && \DateTimeImmutable::getLastErrors() === false) {
+                    $search = $date->format('Y-m-d');
+                    break;
+                }
             }
-
-            if (request('status') === 'completed') {
-                $query->whereNotNull('time_in')
-                    ->whereNotNull('time_out');
-            }
-
-            if (request('status') === 'not_started') {
-                $query->whereNull('time_in')
-                    ->whereNull('time_out');
-            }
+            $query->where('date', 'like', '%'.$search.'%');
         }
 
-        $attendances = $query
-            ->latest('date')
-            ->paginate(10)
-            ->withQueryString();
-
-        if (request()->ajax()) {
-            return view('employee.attendance.partials.table', compact('attendances'));
+        if ($request->filled('date')) {
+            $query->whereDate('date', $filters['date']);
         }
 
-        return view('employee.attendance.index', compact(
-            'employee',
-            'attendances'
-        ));
+        if (($filters['status'] ?? '') === 'working') {
+            $query->whereNotNull('time_in')->whereNull('time_out');
+        } elseif (($filters['status'] ?? '') === 'completed') {
+            $query->whereNotNull('time_in')->whereNotNull('time_out');
+        } elseif (($filters['status'] ?? '') === 'not_started') {
+            $query->whereNull('time_in')->whereNull('time_out');
+        }
+
+        $attendances = $query->latest('date')->latest('id')->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'attendances' => collect($attendances->items())->map(fn (Attendance $attendance) => [
+                ...$attendance->toArray(),
+                'date' => $attendance->date?->format('Y-m-d'),
+            ]),
+            'pagination' => [
+                'current_page' => $attendances->currentPage(),
+                'last_page' => $attendances->lastPage(),
+                'per_page' => $attendances->perPage(),
+                'total' => $attendances->total(),
+            ],
+        ]);
     }
 
 

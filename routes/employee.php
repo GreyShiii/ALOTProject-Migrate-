@@ -29,6 +29,7 @@ Route::prefix('employee/attendance')
     ->name('employee.attendance.')
     ->group(function () {
         Route::get('/', [EmployeeAttendanceController::class, 'index'])->name('index');
+        Route::get('/data', [EmployeeAttendanceController::class, 'data'])->name('data');
         Route::post('/time-in', [EmployeeAttendanceController::class, 'timeIn'])->name('timeIn');
         Route::post('/time-out', [EmployeeAttendanceController::class, 'timeOut'])->name('timeOut');
     });
