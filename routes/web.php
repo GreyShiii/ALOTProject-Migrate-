@@ -21,6 +21,7 @@ use App\Http\Controllers\Manager\OvertimeController as ManagerOvertimeController
 use App\Http\Controllers\Manager\TeamController;
 use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
 use App\Http\Controllers\Manager\AttendanceController as ManagerAttendanceController;
+use App\Http\Controllers\Manager\ProfileController as ManagerProfileController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -266,10 +267,6 @@ Route::prefix('employee/overtime')
     |--------------------------------------------------------------------------
     | Manager Profile
     |--------------------------------------------------------------------------
-    |
-    | Uses the same ProfileController as Employee Profile.
-    | The Blade decides which route prefix to use.
-    |
     */
 
     Route::prefix('manager/profile')
@@ -277,13 +274,13 @@ Route::prefix('employee/overtime')
         ->name('manager.profile.')
         ->group(function () {
 
-            Route::get('/', [ProfileController::class, 'index'])
+            Route::get('/', [ManagerProfileController::class, 'index'])
                 ->name('index');
 
-            Route::put('/', [ProfileController::class, 'update'])
+            Route::put('/', [ManagerProfileController::class, 'update'])
                 ->name('update');
 
-            Route::put('/password', [ProfileController::class, 'updatePassword'])
+            Route::put('/password', [ManagerProfileController::class, 'updatePassword'])
                 ->name('password.update');
 
         });
