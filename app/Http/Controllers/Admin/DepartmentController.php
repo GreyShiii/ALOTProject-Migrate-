@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreDepartmentRequest;
 use App\Http\Requests\Admin\UpdateDepartmentRequest;
 use App\Models\Department;
+use Inertia\Inertia;
 
 class DepartmentController extends Controller
 {
@@ -13,7 +14,10 @@ class DepartmentController extends Controller
     {
         $departments = Department::withCount('employees')->get();
 
-        return view('admin.departments.index', compact('departments'));
+        return Inertia::render('Admin/Departments/Index', [
+            'departments' => $departments,
+            'actionUrl' => route('admin.departments.index'),
+        ]);
     }
 
     public function store(StoreDepartmentRequest $request)
