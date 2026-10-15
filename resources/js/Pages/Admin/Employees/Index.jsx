@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import EmployeeEditor from '../../../Components/Admin/EmployeeEditor';
 import { AdminPage, Badge, Button, ConfirmAction, DataTable, Details, Dialog, Filters, formatDate, matchesSearch, nameOf, Panel, refreshPage, Search, SelectFilter } from '../../../Components/Admin/Ui';
 
-export default function Index({ employees, departments, managers, actionUrl }) {
+export default function Index({ employees, departments, managers, actionUrl, openDialog = null }) {
     const [search, setSearch] = useState('');
     const [department, setDepartment] = useState('');
     const [manager, setManager] = useState('');
-    const [dialog, setDialog] = useState(null);
+    const [dialog, setDialog] = useState(openDialog);
     const [notice, setNotice] = useState('');
     const close = () => setDialog(null);
+    useEffect(() => setDialog(openDialog), [openDialog]);
     const saved = (message) => { close(); setNotice(message); refreshPage(); };
     const rows = employees.filter((employee) =>
         matchesSearch(search, `EMP-${String(employee.id).padStart(2, '0')}`, nameOf(employee.user), employee.user?.email, employee.position, employee.department?.name)
