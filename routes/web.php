@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use App\Http\Controllers\Admin\LeaveController as AdminLeaveController;
 use App\Http\Controllers\Admin\OvertimeController as AdminOvertimeController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 
 use App\Http\Controllers\Auth\LoginController;
 
@@ -401,13 +402,13 @@ Route::prefix('employee/overtime')
                 ->name('profile.')
                 ->group(function () {
 
-                    Route::get('/', [ProfileController::class, 'index'])
+                    Route::get('/', [AdminProfileController::class, 'index'])
                         ->name('index');
 
-                    Route::put('/', [ProfileController::class, 'update'])
+                    Route::put('/', [AdminProfileController::class, 'update'])
                         ->name('update');
 
-                    Route::put('/password', [ProfileController::class, 'updatePassword'])
+                    Route::put('/password', [AdminProfileController::class, 'updatePassword'])
                         ->name('password.update');
 
                 });

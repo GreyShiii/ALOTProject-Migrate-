@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Employee;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
@@ -21,10 +22,15 @@ class ProfileController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        return view('employee.profile.index', compact(
-            'user',
-            'employee'
-        ));
+        return Inertia::render('Admin/Profile/Index', [
+            'user' => [...$user->toArray(), 'role' => $user->primaryRoleName()],
+            'employee' => $employee ? [
+                ...$employee->toArray(),
+                'hire_date' => $employee->hire_date?->format('Y-m-d'),
+            ] : null,
+            'actionUrl' => route('admin.profile.update'),
+            'passwordUrl' => route('admin.profile.password.update'),
+        ]);
     }
 
     public function update(Request $request)
