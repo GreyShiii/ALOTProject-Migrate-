@@ -84,7 +84,7 @@ class HandleInertiaRequests extends Middleware
             'href' => route($item[1]),
             'icon' => $item[2],
             // Use Inertia only for pages that have already been migrated.
-            'inertia' => in_array($item[1], ['admin.dashboard', 'admin.users.index', 'admin.departments.index', 'admin.employees.index', 'admin.attendance.index', 'admin.leave.index', 'admin.overtime.index', 'admin.profile.index', 'manager.dashboard', 'manager.attendance.index', 'manager.leave.index', 'manager.overtime.index', 'manager.team.index', 'manager.profile.index', 'employee.dashboard', 'employee.attendance.index', 'employee.leave.index'], true),
+            'inertia' => in_array($item[1], ['admin.dashboard', 'admin.users.index', 'admin.departments.index', 'admin.employees.index', 'admin.attendance.index', 'admin.leave.index', 'admin.overtime.index', 'admin.profile.index', 'manager.dashboard', 'manager.attendance.index', 'manager.leave.index', 'manager.overtime.index', 'manager.team.index', 'manager.profile.index', 'employee.dashboard', 'employee.attendance.index', 'employee.leave.index', 'employee.overtime.index'], true),
         ], $items);
     }
 }
