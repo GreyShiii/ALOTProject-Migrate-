@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
 use App\Models\OvertimeRequest;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $teamEmployeeIds = $manager->subordinates()
             ->pluck('id');
@@ -68,13 +70,37 @@ class DashboardController extends Controller
             ->latest('date')
             ->get();
 
-        return view('manager.dashboard', compact(
-            'pendingLeaveCount',
-            'pendingOvertimeCount',
-            'teamMemberCount',
-            'approvedRequestCount',
-            'pendingLeaveRequests',
-            'pendingOvertimeRequests'
-        ));
+        $pendingRequests = $pendingLeaveRequests->map(fn ($request) => [
+            'id' => 'leave-'.$request->id,
+            'type' => 'Leave',
+            'employee' => $request->employee,
+            'details' => $request->leave_type,
+            'date' => $request->start_date?->format('Y-m-d'),
+            'submitted' => $request->created_at,
+            'route' => route('manager.leave.index'),
+        ])->concat($pendingOvertimeRequests->map(fn ($request) => [
+            'id' => 'overtime-'.$request->id,
+            'type' => 'Overtime',
+            'employee' => $request->employee,
+            'details' => $request->hours.' hours',
+            'date' => $request->date?->format('Y-m-d'),
+            'submitted' => $request->created_at,
+            'route' => route('manager.overtime.index'),
+        ]))->sortByDesc('submitted')->take(5)->values();
+
+        return Inertia::render('Manager/Dashboard', [
+            ...compact(
+                'pendingLeaveCount',
+                'pendingOvertimeCount',
+                'teamMemberCount',
+                'approvedRequestCount'
+            ),
+            'pendingRequests' => $pendingRequests,
+            'links' => [
+                'leave' => route('manager.leave.index'),
+                'overtime' => route('manager.overtime.index'),
+                'team' => route('manager.team.index'),
+            ],
+        ]);
     }
 }
