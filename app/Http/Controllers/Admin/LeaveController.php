@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\LeaveRequest;
+use Inertia\Inertia;
 
 class LeaveController extends Controller
 {
@@ -16,13 +17,18 @@ class LeaveController extends Controller
             'approver',
         ])
             ->latest('created_at')
-            ->get();
+            ->get()
+            ->map(fn (LeaveRequest $leave) => [
+                ...$leave->toArray(),
+                'start_date' => $leave->start_date?->format('Y-m-d'),
+                'end_date' => $leave->end_date?->format('Y-m-d'),
+            ]);
 
         $departments =
             Department::orderBy('name')->get();
 
-        return view(
-            'admin.leave.index',
+        return Inertia::render(
+            'Admin/Leave/Index',
             compact(
                 'leaveRequests',
                 'departments'
