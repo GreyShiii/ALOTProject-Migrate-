@@ -39,6 +39,9 @@ class HandleInertiaRequests extends Middleware
                 'logoutUrl' => route('logout'),
                 'navigation' => $this->navigation($user),
             ] : null,
+            'flash' => [
+                'status' => fn () => $request->session()->get('status'),
+            ],
         ];
     }
 

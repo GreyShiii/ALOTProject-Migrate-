@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import GuestLayout from '../../Layouts/GuestLayout';
 export default function Login({ loginUrl, logoUrl }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -89,6 +89,11 @@ export default function Login({ loginUrl, logoUrl }) {
                         </svg>
                     </button>
                 </form>
+                <p className="mt-4 text-right text-sm">
+                    <Link href="/forgot-password" className="font-medium text-blue-800 hover:underline">
+                        Forgot your password?
+                    </Link>
+                </p>
                 <div className="mt-7 border-t border-gray-200 pt-5">
                     <div className="flex items-start gap-2.5">
                         <svg className="mt-0.5 h-4 w-4 shrink-0 text-teal-500" fill="none" stroke="currentColor"
