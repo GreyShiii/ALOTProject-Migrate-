@@ -67,11 +67,14 @@ export function DateFilter({ value, onChange }) {
     return <input type="date" aria-label="Filter by date" value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClass} sm:w-48`} />;
 }
 
-export function DataTable({ rows, columns, empty = 'No records found.', pageSize = 10 }) {
+export function DataTable({ rows, columns, empty = 'No records found.', pageSize = 10, pagination, onPageChange, paginationLabel = 'Table pagination' }) {
     const [page, setPage] = useState(1);
-    const lastPage = Math.max(1, Math.ceil(rows.length / pageSize));
-    const current = Math.min(page, lastPage);
-    const visible = rows.slice((current - 1) * pageSize, current * pageSize);
+    const perPage = pagination?.per_page || pageSize;
+    const total = pagination?.total ?? rows.length;
+    const lastPage = pagination?.last_page || Math.max(1, Math.ceil(total / perPage));
+    const current = pagination?.current_page || Math.min(page, lastPage);
+    const visible = pagination ? rows : rows.slice((current - 1) * perPage, current * perPage);
+    const changePage = onPageChange || setPage;
     const cell = (row, column) => column.render ? column.render(row) : row[column.key] || 'N/A';
 
     return <>
@@ -90,12 +93,12 @@ export function DataTable({ rows, columns, empty = 'No records found.', pageSize
             </div>)}</dl>)}
         </div>
         {rows.length === 0 && <p className="px-5 py-10 text-center text-sm text-gray-500">{empty}</p>}
-        {rows.length > 0 && <nav aria-label="Table pagination" className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-5 py-4">
-            <p aria-live="polite" className="text-sm text-gray-500">Showing {(current - 1) * pageSize + 1}–{Math.min(current * pageSize, rows.length)} of {rows.length}</p>
+        {total > 0 && <nav aria-label={paginationLabel} className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-5 py-4">
+            <p aria-live="polite" className="text-sm text-gray-500">Showing {(current - 1) * perPage + 1}–{Math.min(current * perPage, total)} of {total}</p>
             <div className="flex items-center gap-3">
-                <Button variant="secondary" disabled={current === 1} onClick={() => setPage(current - 1)}>Previous</Button>
+                <Button variant="secondary" disabled={current === 1} onClick={() => changePage(current - 1)}>Previous</Button>
                 <span className="text-sm text-gray-500">{current} / {lastPage}</span>
-                <Button variant="secondary" disabled={current === lastPage} onClick={() => setPage(current + 1)}>Next</Button>
+                <Button variant="secondary" disabled={current === lastPage} onClick={() => changePage(current + 1)}>Next</Button>
             </div>
         </nav>}
     </>;

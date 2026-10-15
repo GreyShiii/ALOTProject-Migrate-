@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AttendanceController extends Controller
 {
     public function index()
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $todayAttendance = Attendance::where(
             'employee_id',
@@ -20,18 +22,22 @@ class AttendanceController extends Controller
             ->whereDate('date', today())
             ->first();
 
-        return view(
-            'manager.attendance.index',
-            compact(
-                'employee',
-                'todayAttendance'
-            )
-        );
+        return Inertia::render('Manager/Attendance/Index', [
+            'todayAttendance' => $todayAttendance ? $this->attendancePayload($todayAttendance) : null,
+            'todayLabel' => today()->format('F j, Y'),
+            'timezone' => config('app.timezone'),
+            'links' => [
+                'data' => route('manager.attendance.data'),
+                'timeIn' => route('manager.attendance.timeIn'),
+                'timeOut' => route('manager.attendance.timeOut'),
+            ],
+        ]);
     }
 
     public function data(Request $request)
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 404, 'Employee record not found.');
 
         $scope = $request->input(
             'scope',
@@ -66,10 +72,10 @@ class AttendanceController extends Controller
             $search =
                 $request->input('search');
 
-            $query->whereHas(
-                'employee.user',
-                function ($userQuery) use ($search) {
-
+            if ($scope === 'mine') {
+                $query->where('date', 'like', '%'.$search.'%');
+            } else {
+                $query->whereHas('employee.user', function ($userQuery) use ($search) {
                     $userQuery
                         ->where(
                             'first_name',
@@ -86,8 +92,8 @@ class AttendanceController extends Controller
                             'LIKE',
                             '%' . $search . '%'
                         );
-                }
-            );
+                });
+            }
         }
 
         if ($request->filled('date')) {
@@ -130,7 +136,7 @@ class AttendanceController extends Controller
             'success' => true,
 
             'attendances' =>
-            $attendances->items(),
+            collect($attendances->items())->map(fn (Attendance $attendance) => $this->attendancePayload($attendance)),
 
             'pagination' => [
                 'current_page' =>
@@ -146,6 +152,14 @@ class AttendanceController extends Controller
                 $attendances->total(),
             ],
         ]);
+    }
+
+    private function attendancePayload(Attendance $attendance): array
+    {
+        return [
+            ...$attendance->toArray(),
+            'date' => $attendance->date?->format('Y-m-d'),
+        ];
     }
 
     public function timeIn()
