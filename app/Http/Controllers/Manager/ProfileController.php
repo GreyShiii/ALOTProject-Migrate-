@@ -7,27 +7,30 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
     public function index()
     {
-        /** @var \App\Models\User $user */
-        $update = Auth::user();
         $user = Auth::user();
 
         $employee = Employee::with([
             'department',
-            'manager',
+            'manager.user',
         ])
             ->where('user_id', $user->id)
             ->first();
 
-        return view('manager.profile.index', compact(
-            'user',
-            'employee'
-        ));
+        return Inertia::render('Manager/Profile/Index', [
+            'user' => [...$user->toArray(), 'role' => $user->primaryRoleName()],
+            'employee' => $employee ? [
+                ...$employee->toArray(),
+                'hire_date' => $employee->hire_date?->format('Y-m-d'),
+            ] : null,
+            'actionUrl' => route('manager.profile.update'),
+            'passwordUrl' => route('manager.profile.password.update'),
+        ]);
     }
 
     public function update(Request $request)
@@ -61,8 +64,17 @@ class ProfileController extends Controller
             'email' => $validated['email'],
         ]);
 
-        return to_route('manager.profile')
-            ->with('success', 'Profile updated successfully!');
+        $user->load([
+            'employee.department',
+            'employee.manager.user',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully!',
+            'user' => $user,
+            'employee' => $user->employee,
+        ]);
     }
 
     public function updatePassword(Request $request)
@@ -86,11 +98,14 @@ class ProfileController extends Controller
             $validated['current_password'],
             $user->password
         )) {
-            return back()
-                ->withErrors([
-                    'current_password' => 'The current password is incorrect.',
-                ])
-                ->withInput();
+            return response()->json([
+                'message' => 'The current password is incorrect.',
+                'errors' => [
+                    'current_password' => [
+                        'The current password is incorrect.',
+                    ],
+                ],
+            ], 422);
         }
 
         $user->update([
@@ -99,7 +114,9 @@ class ProfileController extends Controller
             ),
         ]);
 
-        return to_route('manager.profile')
-            ->with('password_success', 'Password updated successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Password updated successfully!',
+        ]);
     }
 }

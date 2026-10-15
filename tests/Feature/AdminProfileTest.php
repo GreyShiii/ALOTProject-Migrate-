@@ -126,11 +126,12 @@ class AdminProfileTest extends TestCase
         $this->putJson(route('admin.profile.password.update'), [])->assertForbidden();
     }
 
-    public function test_manager_cannot_access_admin_profile_but_other_profile_pages_still_render_blade(): void
+    public function test_manager_cannot_access_admin_profile_and_employee_profile_still_renders_blade(): void
     {
         $this->actingAs($this->user('manager', 'manager@example.com'));
         $this->get(route('admin.profile.index'))->assertForbidden();
-        $this->get(route('manager.profile.index'))->assertOk()->assertViewIs('employee.profile.index');
+        $this->get(route('manager.profile.index'))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Manager/Profile/Index'));
         $this->actingAs($this->user('employee', 'employee@example.com'));
         $this->get(route('employee.profile.index'))->assertOk()->assertViewIs('employee.profile.index');
     }

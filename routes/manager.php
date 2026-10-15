@@ -5,7 +5,7 @@ use App\Http\Controllers\Manager\DashboardController as ManagerDashboardControll
 use App\Http\Controllers\Manager\LeaveController as ManagerLeaveController;
 use App\Http\Controllers\Manager\OvertimeController as ManagerOvertimeController;
 use App\Http\Controllers\Manager\TeamController;
-use App\Http\Controllers\Employee\ProfileController as ProfileController;
+use App\Http\Controllers\Manager\ProfileController as ManagerProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])
@@ -50,7 +50,7 @@ Route::prefix('manager/profile')
     ->middleware(['role:manager', 'permission:profile.update'])
     ->name('manager.profile.')
     ->group(function () {
-        Route::get('/', [ProfileController::class, 'index'])->name('index');
-        Route::put('/', [ProfileController::class, 'update'])->name('update');
-        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::get('/', [ManagerProfileController::class, 'index'])->name('index');
+        Route::put('/', [ManagerProfileController::class, 'update'])->name('update');
+        Route::put('/password', [ManagerProfileController::class, 'updatePassword'])->name('password.update');
     });

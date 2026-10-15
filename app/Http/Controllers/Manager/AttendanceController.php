@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AttendanceController extends Controller
 {
@@ -21,19 +22,22 @@ class AttendanceController extends Controller
             ->whereDate('date', today())
             ->first();
 
-        return view(
-            'manager.attendance.index',
-            compact(
-                'employee',
-                'todayAttendance'
-            )
-        );
+        return Inertia::render('Manager/Attendance/Index', [
+            'todayAttendance' => $todayAttendance ? $this->attendancePayload($todayAttendance) : null,
+            'todayLabel' => today()->format('F j, Y'),
+            'timezone' => config('app.timezone'),
+            'links' => [
+                'data' => route('manager.attendance.data'),
+                'timeIn' => route('manager.attendance.timeIn'),
+                'timeOut' => route('manager.attendance.timeOut'),
+            ],
+        ]);
     }
 
     public function data(Request $request)
     {
         $manager = Auth::user()->employee;
-        abort_unless($manager, 403, 'Employee record not found.');
+        abort_unless($manager, 404, 'Employee record not found.');
 
         $filters = $request->validate([
             'scope' => ['nullable', 'in:team,mine'],
@@ -72,10 +76,10 @@ class AttendanceController extends Controller
 
             $search = $filters['search'];
 
-            $query->whereHas(
-                'employee.user',
-                function ($userQuery) use ($search) {
-
+            if ($scope === 'mine') {
+                $query->where('date', 'like', '%'.$search.'%');
+            } else {
+                $query->whereHas('employee.user', function ($userQuery) use ($search) {
                     $userQuery
                         ->where(
                             'first_name',
@@ -92,8 +96,8 @@ class AttendanceController extends Controller
                             'LIKE',
                             '%' . $search . '%'
                         );
-                }
-            );
+                });
+            }
         }
 
         if (!empty($filters['date'])) {
@@ -135,7 +139,7 @@ class AttendanceController extends Controller
             'success' => true,
 
             'attendances' =>
-            $attendances->items(),
+            collect($attendances->items())->map(fn (Attendance $attendance) => $this->attendancePayload($attendance)),
 
             'pagination' => [
                 'current_page' =>
@@ -153,21 +157,20 @@ class AttendanceController extends Controller
         ]);
     }
 
+    private function attendancePayload(Attendance $attendance): array
+    {
+        return [
+            ...$attendance->toArray(),
+            'date' => $attendance->date?->format('Y-m-d'),
+        ];
+    }
+
     public function timeIn()
     {
         $employee =
             Auth::user()->employee;
 
-        abort_unless($employee, 403, 'Employee record not found.');
-
-        if (!$employee) {
-
-            return response()->json([
-                'success' => false,
-                'message' =>
-                'Employee record not found.',
-            ], 404);
-        }
+        abort_unless($employee, 404, 'Employee record not found.');
 
         $lastAttendance =
             Attendance::where(
@@ -264,16 +267,7 @@ class AttendanceController extends Controller
         $employee =
             Auth::user()->employee;
 
-        abort_unless($employee, 403, 'Employee record not found.');
-
-        if (!$employee) {
-
-            return response()->json([
-                'success' => false,
-                'message' =>
-                'Employee record not found.',
-            ], 404);
-        }
+        abort_unless($employee, 404, 'Employee record not found.');
 
         $attendance =
             Attendance::where(
