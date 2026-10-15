@@ -4,6 +4,8 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class UpdateEmployeeRequest extends FormRequest
 {
@@ -30,8 +32,13 @@ class UpdateEmployeeRequest extends FormRequest
             'password' => 'nullable|string|min:8',
             'role' => 'required|in:employee,manager,admin',
             'department_id' => 'required|exists:departments,id',
-            'manager_id' => 'nullable|exists:employees,id',
-            'position' => 'required|string|max:100',
+            'manager_id' => [
+                'nullable',
+                Rule::exists('employees', 'id')
+                    ->whereIn('user_id', User::role('manager')->select('id'))
+                    ->where('id', '!=', $employee->id),
+            ],
+            'position' => 'required|string|max:255',
             'hire_date' => 'nullable|date',
         ];
     }
