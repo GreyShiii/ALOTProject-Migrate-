@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class LoginController extends Controller
 {
@@ -13,7 +14,10 @@ class LoginController extends Controller
      */
     public function create()
     {
-        return view('auth.login');
+        return Inertia::render('Auth/Login', [
+            'loginUrl' => route('login.attempt'),
+            'logoUrl' => asset('images/alot-logo.png'),
+        ]);
     }
 
     /**
@@ -44,7 +48,12 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended($this->redirectPath($user));
+        $redirect = redirect()->intended($this->redirectPath($user));
+
+        // Dashboards still render Blade, so leave Inertia with a full page visit.
+        return $request->header('X-Inertia')
+            ? Inertia::location($redirect->getTargetUrl())
+            : $redirect;
     }
 
     /**
