@@ -5,7 +5,7 @@ use App\Http\Controllers\Manager\DashboardController as ManagerDashboardControll
 use App\Http\Controllers\Manager\LeaveController as ManagerLeaveController;
 use App\Http\Controllers\Manager\OvertimeController as ManagerOvertimeController;
 use App\Http\Controllers\Manager\TeamController;
-use App\Http\Controllers\Employee\ProfileController as ProfileController;
+use App\Http\Controllers\Manager\ProfileController as ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])

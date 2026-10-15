@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\LeaveRequest;
 use App\Models\OvertimeRequest;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -49,6 +50,8 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($request) {
                 return [
+                    'id' => 'leave-'.$request->id,
+                    'route' => route('employee.leave.index'),
                     'type' => $this->formatLeaveType($request->leave_type),
                     'date' => $this->formatDateRange(
                         $request->start_date,
@@ -67,6 +70,8 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($request) {
                 return [
+                    'id' => 'overtime-'.$request->id,
+                    'route' => route('employee.overtime.index'),
                     'type' => 'Overtime',
                     'date' => $request->date->format('M j, Y') .
                         ' · ' .
@@ -85,15 +90,23 @@ class DashboardController extends Controller
             ->take(5)
             ->values();
 
-        return view('employee.dashboard', compact(
-            'employee',
-            'todayAttendance',
-            'pendingLeaveCount',
-            'pendingOvertimeCount',
-            'approvedLeaveCount',
-            'approvedOvertimeCount',
-            'recentRequests'
-        ));
+        return Inertia::render('Employee/Dashboard', [
+            ...compact(
+                'pendingLeaveCount',
+                'pendingOvertimeCount',
+                'approvedLeaveCount',
+                'approvedOvertimeCount',
+                'recentRequests'
+            ),
+            'attendance' => $this->attendanceSummary($todayAttendance),
+            'todayLabel' => today()->format('F j, Y'),
+            'links' => [
+                'timeIn' => route('employee.attendance.timeIn'),
+                'timeOut' => route('employee.attendance.timeOut'),
+                'leave' => route('employee.leave.index'),
+                'overtime' => route('employee.overtime.index'),
+            ],
+        ]);
     }
 
     public function data()
@@ -110,6 +123,13 @@ class DashboardController extends Controller
             ->whereDate('date', today())
             ->first();
 
+        return response()->json([
+            'attendance' => $this->attendanceSummary($todayAttendance),
+        ]);
+    }
+
+    private function attendanceSummary(?Attendance $todayAttendance): array
+    {
         $status = 'not_started';
 
         if ($todayAttendance?->time_in && !$todayAttendance?->time_out) {
@@ -121,8 +141,8 @@ class DashboardController extends Controller
         $totalHours = null;
 
         if ($todayAttendance?->time_in && $todayAttendance?->time_out) {
-            $totalMinutes = $todayAttendance->time_in
-                ->diffInMinutes($todayAttendance->time_out);
+            $totalMinutes = (int) abs($todayAttendance->time_in
+                ->diffInMinutes($todayAttendance->time_out));
 
             $hours = intdiv($totalMinutes, 60);
             $minutes = $totalMinutes % 60;
@@ -135,21 +155,12 @@ class DashboardController extends Controller
             ) . "m";
         }
 
-        return response()->json([
-            'attendance' => [
-                'status' => $status,
-
-                'time_in' => $todayAttendance?->time_in
-                    ? $todayAttendance->time_in->format('h:i A')
-                    : null,
-
-                'time_out' => $todayAttendance?->time_out
-                    ? $todayAttendance->time_out->format('h:i A')
-                    : null,
-
-                'total_hours' => $totalHours,
-            ],
-        ]);
+        return [
+            'status' => $status,
+            'time_in' => $todayAttendance?->time_in?->format('h:i A'),
+            'time_out' => $todayAttendance?->time_out?->format('h:i A'),
+            'total_hours' => $totalHours,
+        ];
     }
 
     private function formatLeaveType($type)
