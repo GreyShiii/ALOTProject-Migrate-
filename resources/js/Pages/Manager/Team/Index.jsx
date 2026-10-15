@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
 import ManagerLayout from '../../../Layouts/ManagerLayout';
 
-const pageSize = 10;
+const PAGE_SIZE = 10;
+const columns = ['Employee', 'Position', 'Department', 'Email', 'Hire date', 'Status'];
 
 function formatDate(value) {
     if (!value) return 'N/A';
@@ -35,23 +35,96 @@ function EmployeeDetails({ employee }) {
     return (
         <>
             <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-gray-900"><EmployeeName employee={employee} /></p>
-                <p className="mt-1 truncate text-xs text-gray-500">{employee.position || '—'}</p>
+                <p className="truncate text-sm font-semibold text-gray-900">
+                    <EmployeeName employee={employee} />
+                </p>
+                <p className="mt-1 truncate text-xs text-gray-500">{employee.position || 'N/A'}</p>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Department</p><p className="truncate text-gray-700">{employee.department?.name || '—'}</p></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Hire date</p><p className="text-gray-700">{formatDate(employee.hire_date)}</p></div>
-                <div className="col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Email</p><p className="break-all text-gray-700">{user?.email || '—'}</p></div>
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Department</p>
+                    <p className="truncate text-gray-700">{employee.department?.name || 'N/A'}</p>
+                </div>
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Hire date</p>
+                    <p className="text-gray-700">{formatDate(employee.hire_date)}</p>
+                </div>
+                <div className="col-span-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Email</p>
+                    <p className="break-all text-gray-700">{user?.email || 'N/A'}</p>
+                </div>
             </div>
         </>
     );
 }
 
-export default function Index({ employees }) {
+function TeamTable({ employees }) {
+    return (
+        <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[850px] divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        {columns.map((column) => (
+                            <th key={column} scope="col" className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                {column}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                    {employees.map((employee) => (
+                        <tr key={employee.id} className="transition hover:bg-gray-50">
+                            <td className="px-4 py-4 text-center text-sm font-semibold">
+                                <EmployeeName employee={employee} />
+                            </td>
+                            <td className="px-4 py-4 text-center text-sm text-gray-700">{employee.position || 'N/A'}</td>
+                            <td className="px-4 py-4 text-center text-sm text-gray-700">{employee.department?.name || 'N/A'}</td>
+                            <td className="max-w-56 truncate px-4 py-4 text-center text-sm text-gray-700">{employee.user?.email || 'N/A'}</td>
+                            <td className="whitespace-nowrap px-4 py-4 text-center text-sm text-gray-700">{formatDate(employee.hire_date)}</td>
+                            <td className="px-4 py-4 text-center">
+                                <StatusBadge status={employee.user?.status} />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function TeamPagination({ currentPage, totalPages, totalEmployees, onPageChange }) {
+    const firstRecord = (currentPage - 1) * PAGE_SIZE + 1;
+    const lastRecord = Math.min(currentPage * PAGE_SIZE, totalEmployees);
+
+    return (
+        <div className="flex min-h-[72px] flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-5 py-3">
+            <p className="text-xs text-gray-500">
+                Showing <span className="font-semibold text-gray-700">{firstRecord} - {lastRecord}</span> of{' '}
+                <span className="font-semibold text-gray-700">{totalEmployees}</span> records
+            </p>
+            <nav className="flex items-center gap-1" aria-label="Team pages">
+                <button type="button" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)} className="h-9 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                    Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <button key={page} type="button" aria-current={page === currentPage ? 'page' : undefined} onClick={() => onPageChange(page)} className={`h-9 min-w-9 rounded-lg px-2.5 text-xs font-medium ${page === currentPage ? 'border border-gray-200 bg-gray-100 text-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>
+                        {page}
+                    </button>
+                ))}
+                <button type="button" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)} className="h-9 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                    Next
+                </button>
+            </nav>
+        </div>
+    );
+}
+
+export default function TeamIndex({ employees = [] }) {
     const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = Math.ceil(employees.length / pageSize);
+    const totalPages = Math.ceil(employees.length / PAGE_SIZE);
     const safePage = Math.min(currentPage, Math.max(totalPages, 1));
-    const pageEmployees = employees.slice((safePage - 1) * pageSize, safePage * pageSize);
+    const firstEmployeeIndex = (safePage - 1) * PAGE_SIZE;
+    const pageEmployees = employees.slice(firstEmployeeIndex, firstEmployeeIndex + PAGE_SIZE);
 
     return (
         <ManagerLayout>
@@ -69,30 +142,15 @@ export default function Index({ employees }) {
 
                 {pageEmployees.length > 0 ? (
                     <>
-                        <div className="hidden overflow-x-auto md:block">
-                            <table className="w-full min-w-[850px] divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>{['Employee', 'Position', 'Department', 'Email', 'Hire date', 'Status'].map((label) => <th key={label} scope="col" className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</th>)}</tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {pageEmployees.map((employee) => (
-                                        <tr key={employee.id} className="transition hover:bg-gray-50">
-                                            <td className="px-4 py-4 text-center text-sm font-semibold"> <EmployeeName employee={employee} /></td>
-                                            <td className="px-4 py-4 text-center text-sm text-gray-700">{employee.position || '—'}</td>
-                                            <td className="px-4 py-4 text-center text-sm text-gray-700">{employee.department?.name || '—'}</td>
-                                            <td className="max-w-56 truncate px-4 py-4 text-center text-sm text-gray-700">{employee.user?.email || '—'}</td>
-                                            <td className="whitespace-nowrap px-4 py-4 text-center text-sm text-gray-700">{formatDate(employee.hire_date)}</td>
-                                            <td className="px-4 py-4 text-center"><StatusBadge status={employee.user?.status} /></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <TeamTable employees={pageEmployees} />
 
                         <div className="divide-y divide-gray-200 md:hidden">
                             {pageEmployees.map((employee) => (
                                 <article key={employee.id} className="px-4 py-4">
-                                    <div className="flex items-start justify-between gap-3"><EmployeeDetails employee={employee} /><StatusBadge status={employee.user?.status} /></div>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <EmployeeDetails employee={employee} />
+                                        <StatusBadge status={employee.user?.status} />
+                                    </div>
                                 </article>
                             ))}
                         </div>
@@ -105,14 +163,12 @@ export default function Index({ employees }) {
                 )}
 
                 {totalPages > 1 && (
-                    <div className="flex min-h-[72px] flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-5 py-3">
-                        <p className="text-xs text-gray-500">Showing <span className="font-semibold text-gray-700">{Math.min(safePage * pageSize, employees.length)}</span> of <span className="font-semibold text-gray-700">{employees.length}</span> records</p>
-                        <div className="flex items-center gap-1" aria-label="Team pages">
-                            <button type="button" disabled={safePage <= 1} onClick={() => setCurrentPage(safePage - 1)} className="h-9 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">Previous</button>
-                            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => <button key={page} type="button" aria-current={page === safePage ? 'page' : undefined} onClick={() => setCurrentPage(page)} className={`h-9 min-w-9 rounded-lg px-2.5 text-xs font-medium ${page === safePage ? 'border border-gray-200 bg-gray-100 text-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>{page}</button>)}
-                            <button type="button" disabled={safePage >= totalPages} onClick={() => setCurrentPage(safePage + 1)} className="h-9 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">Next</button>
-                        </div>
-                    </div>
+                    <TeamPagination
+                        currentPage={safePage}
+                        totalPages={totalPages}
+                        totalEmployees={employees.length}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </section>
         </ManagerLayout>
