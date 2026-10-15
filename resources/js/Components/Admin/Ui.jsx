@@ -63,6 +63,10 @@ export function SelectFilter({ label, value, onChange, options }) {
     </select>;
 }
 
+export function DateFilter({ value, onChange }) {
+    return <input type="date" aria-label="Filter by date" value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClass} sm:w-48`} />;
+}
+
 export function DataTable({ rows, columns, empty = 'No records found.', pageSize = 10 }) {
     const [page, setPage] = useState(1);
     const lastPage = Math.max(1, Math.ceil(rows.length / pageSize));

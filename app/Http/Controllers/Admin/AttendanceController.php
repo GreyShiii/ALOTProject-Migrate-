@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AttendanceController extends Controller
 {
@@ -13,10 +14,17 @@ class AttendanceController extends Controller
     {
         $departments = Department::orderBy('name')->get();
 
-        return view(
-            'admin.attendance.index',
-            compact('departments')
-        );
+        return Inertia::render('Admin/Attendance/Index', [
+            'departments' => $departments,
+            'timezone' => config('app.timezone'),
+            'attendances' => Attendance::with(['employee.user', 'employee.department'])
+                ->latest('date')
+                ->get()
+                ->map(fn (Attendance $attendance) => [
+                    ...$attendance->toArray(),
+                    'date' => $attendance->date?->format('Y-m-d'),
+                ]),
+        ]);
     }
 
     public function data(Request $request)
