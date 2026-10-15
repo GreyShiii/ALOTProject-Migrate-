@@ -16,7 +16,7 @@ class EmployeeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(?array $openDialog = null)
     {
         $employees = Employee::with([
             'user.roles',
@@ -37,6 +37,7 @@ class EmployeeController extends Controller
             'departments' => $departments,
             'managers' => $managers,
             'actionUrl' => route('admin.employees.index'),
+            'openDialog' => $openDialog,
         ]);
     }
 
@@ -45,7 +46,7 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        //
+        return $this->index(['type' => 'edit']);
     }
 
     /**
@@ -105,9 +106,14 @@ class EmployeeController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Employee $employee)
     {
-        //
+        $employee->load(['user', 'department', 'manager.user']);
+
+        return $this->index([
+            'type' => 'edit',
+            'person' => $this->employeePayload($employee),
+        ]);
     }
 
     /**

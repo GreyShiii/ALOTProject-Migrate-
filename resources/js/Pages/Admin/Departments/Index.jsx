@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useApiForm from '../../../Components/Admin/useApiForm';
 import { AdminPage, Button, ConfirmAction, DataTable, Dialog, Field, Filters, FormActions, FormErrors, formatDate, matchesSearch, Panel, refreshPage, Search } from '../../../Components/Admin/Ui';
 
@@ -10,17 +10,18 @@ function DepartmentEditor({ department, actionUrl, onClose, onSaved }) {
             if (await form.submit(department ? 'put' : 'post', department ? `${actionUrl}/${department.id}` : actionUrl)) onSaved();
         }}>
             <FormErrors form={form} />
-            <fieldset disabled={form.processing}><Field form={form} name="name" label="Department name" required maxLength={department ? 100 : 255} /></fieldset>
+            <fieldset disabled={form.processing}><Field form={form} name="name" label="Department name" required maxLength={255} /></fieldset>
             <FormActions busy={form.processing} onCancel={onClose} label={department ? 'Save changes' : 'Add department'} />
         </form>
     </Dialog>;
 }
 
-export default function Index({ departments, actionUrl }) {
+export default function Index({ departments, actionUrl, openDialog = null }) {
     const [search, setSearch] = useState('');
-    const [dialog, setDialog] = useState(null);
+    const [dialog, setDialog] = useState(openDialog);
     const [notice, setNotice] = useState('');
     const close = () => setDialog(null);
+    useEffect(() => setDialog(openDialog), [openDialog]);
     const saved = (message) => { close(); setNotice(message); refreshPage(); };
     const department = dialog?.department;
 

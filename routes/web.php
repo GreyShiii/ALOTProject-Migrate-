@@ -309,13 +309,7 @@ Route::prefix('employee/overtime')
             // Employees
             Route::middleware('permission:employees.manage')->group(function () {
                 Route::resource('employees', EmployeeController::class)
-                    ->only([
-                        'index',
-                        'store',
-                        'show',
-                        'update',
-                        'destroy',
-                    ]);
+                    ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
             });
 
 
@@ -338,12 +332,7 @@ Route::prefix('employee/overtime')
             // Departments
             Route::middleware('permission:departments.manage')->group(function () {
                 Route::resource('departments', DepartmentController::class)
-                    ->only([
-                        'index',
-                        'store',
-                        'update',
-                        'destroy',
-                    ]);
+                    ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
             });
 
 

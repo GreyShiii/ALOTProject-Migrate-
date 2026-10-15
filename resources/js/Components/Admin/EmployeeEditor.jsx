@@ -37,7 +37,7 @@ export default function EmployeeEditor({ employee, departments, managers, action
                 <Field form={form} name="manager_id" label="Manager" options={[
                     ['', 'No manager'], ...managers.filter((manager) => manager.id !== employee?.id).map((manager) => [manager.id, nameOf(manager.user)]),
                 ]} />
-                <Field form={form} name="position" label="Position" required maxLength={editing ? 100 : 255} />
+                <Field form={form} name="position" label="Position" required maxLength={255} />
                 <Field form={form} name="hire_date" label="Hire date" type="date" />
             </fieldset>
             <FormActions busy={form.processing} onCancel={onClose} label={editing ? 'Save changes' : 'Add employee'} />

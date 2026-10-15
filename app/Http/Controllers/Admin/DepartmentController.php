@@ -10,13 +10,34 @@ use Inertia\Inertia;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function index(?array $openDialog = null)
     {
         $departments = Department::withCount('employees')->get();
 
         return Inertia::render('Admin/Departments/Index', [
             'departments' => $departments,
             'actionUrl' => route('admin.departments.index'),
+            'openDialog' => $openDialog,
+        ]);
+    }
+
+    public function create()
+    {
+        return $this->index(['type' => 'edit']);
+    }
+
+    public function show(Department $department)
+    {
+        return response()->json([
+            'department' => $department->loadCount('employees'),
+        ]);
+    }
+
+    public function edit(Department $department)
+    {
+        return $this->index([
+            'type' => 'edit',
+            'department' => $department,
         ]);
     }
 
