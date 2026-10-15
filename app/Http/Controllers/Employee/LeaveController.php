@@ -3,81 +3,65 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class LeaveController extends Controller
 {
     public function index()
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
-        $leaveRequests = LeaveRequest::where('employee_id', $employee->id)
-            ->latest('created_at')
-            ->paginate(5);
-
-        $pendingCount = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'Pending')
-            ->count();
-
-        $approvedCount = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'Approved')
-            ->count();
-
-        $rejectedCount = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'Rejected')
-            ->count();
-
-        $totalCount = LeaveRequest::where('employee_id', $employee->id)
-            ->count();
-
-        return view('employee.leave.index', compact(
-            'employee',
-            'leaveRequests',
-            'pendingCount',
-            'approvedCount',
-            'rejectedCount',
-            'totalCount'
-        ));
+        return Inertia::render('Employee/Leave/Index', [
+            ...$this->ownRequests($employee),
+            'storeUrl' => route('employee.leave.store'),
+            'canCreate' => Auth::user()->can('leave.create.own'),
+        ]);
     }
 
     public function data()
     {
         $employee = Auth::user()->employee;
-
-        $leaves = LeaveRequest::where('employee_id', $employee->id)
-            ->latest('created_at')
-            ->get();
-
-        $pendingCount = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'Pending')
-            ->count();
-
-        $approvedCount = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'Approved')
-            ->count();
-
-        $rejectedCount = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'Rejected')
-            ->count();
-
-        $totalCount = LeaveRequest::where('employee_id', $employee->id)
-            ->count();
+        abort_unless($employee, 404, 'Employee record not found.');
 
         return response()->json([
             'success' => true,
-            'leaves' => $leaves,
-            'pendingCount' => $pendingCount,
-            'approvedCount' => $approvedCount,
-            'rejectedCount' => $rejectedCount,
-            'totalCount' => $totalCount,
+            ...$this->ownRequests($employee),
         ]);
+    }
+
+    private function ownRequests(Employee $employee): array
+    {
+        $leaves = LeaveRequest::with('approver:id,first_name,last_name')
+            ->where('employee_id', $employee->id)
+            ->latest('created_at')->latest('id')->get();
+
+        return [
+            'leaves' => $leaves->map(fn (LeaveRequest $leave) => $this->leavePayload($leave)),
+            'pendingCount' => $leaves->where('status', 'Pending')->count(),
+            'approvedCount' => $leaves->where('status', 'Approved')->count(),
+            'rejectedCount' => $leaves->where('status', 'Rejected')->count(),
+            'totalCount' => $leaves->count(),
+        ];
+    }
+
+    private function leavePayload(LeaveRequest $leave): array
+    {
+        return [
+            ...$leave->toArray(),
+            'start_date' => $leave->start_date?->format('Y-m-d'),
+            'end_date' => $leave->end_date?->format('Y-m-d'),
+        ];
     }
 
     public function store(Request $request)
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 404, 'Employee record not found.');
 
         $validated = $request->validate([
             'leave_type' => 'required|in:Sick,Vacation,Emergency,Bereavement',
@@ -98,7 +82,7 @@ class LeaveController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Leave request submitted successfully.',
-            'data' => $leave,
+            'data' => $this->leavePayload($leave),
         ]);
     }
 }
