@@ -9,17 +9,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::latest()->get();
+        $users = User::with(['roles', 'employee.department', 'employee.manager.user'])->latest()->get();
 
-        return view(
-            'admin.users.index',
-            compact('users')
-        );
+        return Inertia::render('Admin/Users/Index', [
+            'users' => $users->map(function (User $user) {
+                $payload = $user->toArray();
+                $payload['role'] = $user->primaryRoleName();
+
+                if ($user->employee) {
+                    // A calendar date must not shift when serialized to UTC.
+                    $payload['employee']['hire_date'] = $user->employee->hire_date?->format('Y-m-d');
+                }
+
+                return $payload;
+            }),
+            'actionUrl' => route('admin.users.index'),
+        ]);
     }
 
     public function update(Request $request, User $user)
