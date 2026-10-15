@@ -8,9 +8,8 @@
 
         <div class="flex items-center gap-3">
 
-            <div
-                class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-teal-800 text-xs font-bold">
-                ALOT
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center">
+                <img src="{{ asset('images/alot-logo.png') }}" alt="ALOT Logo" class="h-10 w-10 rounded-full object-cover">
             </div>
 
             <div>
