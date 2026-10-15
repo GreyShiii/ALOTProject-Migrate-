@@ -23,6 +23,7 @@ class LeaveController extends Controller
     public function data()
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $leaveRequests = LeaveRequest::with([
             'employee.user',
@@ -47,6 +48,7 @@ class LeaveController extends Controller
     public function approve(LeaveRequest $leaveRequest)
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $belongsToManager =
             $leaveRequest->employee &&
@@ -92,6 +94,7 @@ class LeaveController extends Controller
         LeaveRequest $leaveRequest
     ) {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $belongsToManager =
             $leaveRequest->employee &&

@@ -17,6 +17,7 @@ class OvertimeController extends Controller
     public function data()
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $overtimeRequests = OvertimeRequest::with([
             'employee.user',
@@ -54,6 +55,7 @@ class OvertimeController extends Controller
         OvertimeRequest $overtimeRequest
     ) {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $belongsToManager =
             $overtimeRequest->employee &&
@@ -113,6 +115,7 @@ class OvertimeController extends Controller
         OvertimeRequest $overtimeRequest
     ) {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $belongsToManager =
             $overtimeRequest->employee &&

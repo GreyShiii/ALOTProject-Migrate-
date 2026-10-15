@@ -7,6 +7,8 @@ use App\Http\Requests\Admin\StoreEmployeeRequest;
 use App\Http\Requests\Admin\UpdateEmployeeRequest;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
+use App\Models\OvertimeRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -185,6 +187,16 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
+        $hasHistory = $employee->attendances()->exists()
+            || LeaveRequest::where('employee_id', $employee->id)->exists()
+            || OvertimeRequest::where('employee_id', $employee->id)->exists();
+
+        if ($hasHistory) {
+            return response()->json([
+                'message' => 'This employee has attendance or request history and cannot be deleted. Deactivate their account instead.',
+            ], 409);
+        }
+
         DB::transaction(function () use ($employee) {
 
             /*

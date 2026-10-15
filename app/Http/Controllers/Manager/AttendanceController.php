@@ -12,6 +12,7 @@ class AttendanceController extends Controller
     public function index()
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $todayAttendance = Attendance::where(
             'employee_id',
@@ -32,11 +33,17 @@ class AttendanceController extends Controller
     public function data(Request $request)
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
-        $scope = $request->input(
-            'scope',
-            'team'
-        );
+        $filters = $request->validate([
+            'scope' => ['nullable', 'in:team,mine'],
+            'search' => ['nullable', 'string', 'max:100'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'status' => ['nullable', 'in:completed,working,not_started'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+
+        $scope = $filters['scope'] ?? 'team';
 
         $query = Attendance::with([
             'employee.user',
@@ -61,10 +68,9 @@ class AttendanceController extends Controller
             );
         }
 
-        if ($request->filled('search')) {
+        if (!empty($filters['search'])) {
 
-            $search =
-                $request->input('search');
+            $search = $filters['search'];
 
             $query->whereHas(
                 'employee.user',
@@ -90,18 +96,17 @@ class AttendanceController extends Controller
             );
         }
 
-        if ($request->filled('date')) {
+        if (!empty($filters['date'])) {
 
             $query->whereDate(
                 'date',
-                $request->input('date')
+                $filters['date']
             );
         }
 
-        if ($request->filled('status')) {
+        if (!empty($filters['status'])) {
 
-            $status =
-                $request->input('status');
+            $status = $filters['status'];
 
             if ($status === 'completed') {
 
@@ -152,6 +157,8 @@ class AttendanceController extends Controller
     {
         $employee =
             Auth::user()->employee;
+
+        abort_unless($employee, 403, 'Employee record not found.');
 
         if (!$employee) {
 
@@ -256,6 +263,8 @@ class AttendanceController extends Controller
     {
         $employee =
             Auth::user()->employee;
+
+        abort_unless($employee, 403, 'Employee record not found.');
 
         if (!$employee) {
 

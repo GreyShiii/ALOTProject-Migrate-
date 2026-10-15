@@ -12,6 +12,7 @@ class LeaveController extends Controller
     public function index()
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $leaveRequests = LeaveRequest::where('employee_id', $employee->id)
             ->latest('created_at')
@@ -45,6 +46,7 @@ class LeaveController extends Controller
     public function data()
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $leaves = LeaveRequest::where('employee_id', $employee->id)
             ->latest('created_at')
@@ -78,6 +80,7 @@ class LeaveController extends Controller
     public function store(Request $request)
     {
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $validated = $request->validate([
             'leave_type' => 'required|in:Sick,Vacation,Emergency,Bereavement',

@@ -4,18 +4,27 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'status' => ['nullable', 'in:working,completed,not_started'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+
         $employee = Auth::user()->employee;
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $query = Attendance::where('employee_id', $employee->id);
 
-        if (request('search')) {
-            $search = request('search');
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
 
             $query->where(function ($query) use ($search) {
                 $query->whereDate('date', $search)
@@ -24,23 +33,23 @@ class AttendanceController extends Controller
             });
         }
 
-        if (request('date')) {
-            $query->whereDate('date', request('date'));
+        if (!empty($filters['date'])) {
+            $query->whereDate('date', $filters['date']);
         }
 
-        if (request('status')) {
+        if (!empty($filters['status'])) {
 
-            if (request('status') === 'working') {
+            if ($filters['status'] === 'working') {
                 $query->whereNotNull('time_in')
                     ->whereNull('time_out');
             }
 
-            if (request('status') === 'completed') {
+            if ($filters['status'] === 'completed') {
                 $query->whereNotNull('time_in')
                     ->whereNotNull('time_out');
             }
 
-            if (request('status') === 'not_started') {
+            if ($filters['status'] === 'not_started') {
                 $query->whereNull('time_in')
                     ->whereNull('time_out');
             }
