@@ -6,7 +6,7 @@
         </button>
 
         <div class="flex items-center gap-2 text-sm">
-            <span class="text-gray-400 hidden sm:inline">@yield('breadcrumb-parent', ucfirst(auth()->user()->role ?? ''))</span>
+            <span class="text-gray-400 hidden sm:inline">@yield('breadcrumb-parent', ucfirst(auth()->user()->primaryRoleName() ?? ''))</span>
             <svg class="w-4 h-4 text-gray-300 hidden sm:inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>
             <span class="text-gray-900 font-semibold">@yield('breadcrumb-current', 'Dashboard')</span>
         </div>
@@ -17,7 +17,7 @@
             @php
                 $user = auth()->user();
                 $initials = strtoupper(substr($user->first_name, 0, 1) . substr($user->last_name, 0, 1));
-                $position = $user->employee->position ?? ucfirst($user->role);
+                $position = $user->employee->position ?? ucfirst($user->primaryRoleName() ?? '');
             @endphp
 
             <div class="flex items-center gap-3 border border-gray-200 rounded-full py-1.5 pl-1.5 pr-4">

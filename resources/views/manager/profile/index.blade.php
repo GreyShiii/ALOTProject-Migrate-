@@ -62,7 +62,7 @@
                     <span
                         class="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
                     >
-                        {{ ucfirst($user->role) }}
+                        {{ ucfirst($user->primaryRoleName() ?? '') }}
                     </span>
 
                 </div>
@@ -412,7 +412,7 @@
                     <span
                         class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
                     >
-                        {{ ucfirst($user->role) }}
+                        {{ ucfirst($user->primaryRoleName() ?? '') }}
                     </span>
 
                 </div>

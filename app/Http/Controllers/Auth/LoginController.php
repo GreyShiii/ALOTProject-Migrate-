@@ -52,9 +52,9 @@ class LoginController extends Controller
      */
     protected function redirectPath($user): string
     {
-        return match ($user->role) {
-            'admin' => route('admin.dashboard'),
-            'manager' => route('manager.dashboard'),
+        return match (true) {
+            $user->hasRole('admin') => route('admin.dashboard'),
+            $user->hasRole('manager') => route('manager.dashboard'),
             default => route('employee.dashboard'),
         };
     }

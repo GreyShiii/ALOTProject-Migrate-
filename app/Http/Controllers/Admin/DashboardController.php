@@ -16,9 +16,9 @@ class DashboardController extends Controller
     {
         $today = today();
 
-        $totalEmployees = User::where('role', 'employee')->count();
+        $totalEmployees = User::role('employee')->count();
 
-        $totalManagers = User::where('role', 'manager')->count();
+        $totalManagers = User::role('manager')->count();
 
         $totalDepartments = Department::count();
 

@@ -12,37 +12,36 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Departments
-        $engineering = Department::create(['name' => 'Engineering']);
-        $hr = Department::create(['name' => 'Human Resources']);
+        $engineering = Department::firstOrCreate(['name' => 'Engineering']);
+        $hr = Department::firstOrCreate(['name' => 'Human Resources']);
 
         // Admin
-        $adminUser = User::create([
+        $adminUser = User::updateOrCreate(['email' => 'admin@company.com'], [
             'first_name' => 'Admin',
             'last_name' => 'User',
             'email' => 'admin@company.com',
             'password' => 'password',
-            'role' => 'admin',
             'status' => 'active',
         ]);
+        $adminUser->syncRoles('admin');
 
-        Employee::create([
-            'user_id' => $adminUser->id,
+        Employee::updateOrCreate(['user_id' => $adminUser->id], [
             'department_id' => $hr->id,
             'position' => 'System Administrator',
             'hire_date' => '2020-01-05',
         ]);
 
         // Manager
-        $managerUser = User::create([
+        $managerUser = User::updateOrCreate(['email' => 'daniel.reyes@company.com'], [
             'first_name' => 'Daniel',
             'last_name' => 'Reyes',
             'email' => 'daniel.reyes@company.com',
             'password' => 'password',
-            'role' => 'manager',
             'status' => 'active',
         ]);
+        $managerUser->syncRoles('manager');
 
-        $managerEmployee = Employee::create([
+        $managerEmployee = Employee::updateOrCreate(['user_id' => $managerUser->id], [
             'user_id' => $managerUser->id,
             'department_id' => $engineering->id,
             'position' => 'Engineering Manager',
@@ -50,16 +49,16 @@ class UserSeeder extends Seeder
         ]);
 
         // Employee (reports to Daniel)
-        $employeeUser = User::create([
+        $employeeUser = User::updateOrCreate(['email' => 'bea.oca@company.com'], [
             'first_name' => 'Bea Marie',
             'last_name' => 'Oca',
             'email' => 'bea.oca@company.com',
             'password' => 'password',
-            'role' => 'employee',
             'status' => 'active',
         ]);
+        $employeeUser->syncRoles('employee');
 
-        Employee::create([
+        Employee::updateOrCreate(['user_id' => $employeeUser->id], [
             'user_id' => $employeeUser->id,
             'department_id' => $engineering->id,
             'manager_id' => $managerEmployee->id,
@@ -68,16 +67,16 @@ class UserSeeder extends Seeder
         ]);
 
         // Inactive employee (to test the "deactivated" login block)
-        $inactiveUser = User::create([
+        $inactiveUser = User::updateOrCreate(['email' => 'inactive@company.com'], [
             'first_name' => 'Inactive',
             'last_name' => 'Tester',
             'email' => 'inactive@company.com',
             'password' => 'password',
-            'role' => 'employee',
             'status' => 'inactive',
         ]);
+        $inactiveUser->syncRoles('employee');
 
-        Employee::create([
+        Employee::updateOrCreate(['user_id' => $inactiveUser->id], [
             'user_id' => $inactiveUser->id,
             'department_id' => $engineering->id,
             'manager_id' => $managerEmployee->id,

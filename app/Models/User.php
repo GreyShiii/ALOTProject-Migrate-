@@ -4,17 +4,17 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasRoles, Notifiable;
 
     protected $fillable = [
         'first_name',
         'last_name',
         'email',
         'password',
-        'role',
         'status',
     ];
 
@@ -37,17 +37,22 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->hasRole('admin');
     }
 
     public function isManager(): bool
     {
-        return $this->role === 'manager';
+        return $this->hasRole('manager');
     }
 
     public function isEmployee(): bool
     {
-        return $this->role === 'employee';
+        return $this->hasRole('employee');
+    }
+
+    public function primaryRoleName(): ?string
+    {
+        return $this->getRoleNames()->first();
     }
 
     public function isActive(): bool

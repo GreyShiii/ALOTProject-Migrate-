@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('employee/profile')
+        ->middleware(['role:employee', 'permission:profile.update'])
         ->name('employee.profile.')
         ->group(function () {
 
@@ -100,9 +101,11 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index'])
+        ->middleware(['role:employee', 'permission:dashboard.view.employee'])
         ->name('employee.dashboard');
 
     Route::get('/employee/dashboard/data', [EmployeeDashboardController::class, 'data'])
+        ->middleware(['role:employee', 'permission:dashboard.view.employee'])
         ->name('employee.dashboard.data');
 
 
@@ -113,6 +116,7 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('employee/attendance')
+        ->middleware(['role:employee', 'permission:attendance.manage.own'])
         ->name('employee.attendance.')
         ->group(function () {
 
@@ -135,16 +139,20 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::prefix('employee/leave')
+        ->middleware('role:employee')
         ->name('employee.leave.')
         ->group(function () {
 
             Route::get('/', [EmployeeLeaveController::class, 'index'])
+                ->middleware('permission:leave.view.own')
                 ->name('index');
 
             Route::get('/data', [EmployeeLeaveController::class, 'data'])
+                ->middleware('permission:leave.view.own')
                 ->name('data');
 
             Route::post('/', [EmployeeLeaveController::class, 'store'])
+                ->middleware('permission:leave.create.own')
                 ->name('store');
 
         });
@@ -157,16 +165,20 @@ Route::middleware('auth')->group(function () {
     */
 
 Route::prefix('employee/overtime')
+    ->middleware('role:employee')
     ->name('employee.overtime.')
     ->group(function () {
 
         Route::get('/', [OvertimeController::class, 'index'])
+            ->middleware('permission:overtime.view.own')
             ->name('index');
 
         Route::get('/data', [OvertimeController::class, 'data'])
+            ->middleware('permission:overtime.view.own')
             ->name('data');
 
         Route::post('/', [OvertimeController::class, 'store'])
+            ->middleware('permission:overtime.create.own')
             ->name('store');
 
     });
@@ -179,6 +191,7 @@ Route::prefix('employee/overtime')
     */
 
     Route::get('/manager/dashboard', [ManagerDashboardController::class, 'index'])
+        ->middleware(['role:manager', 'permission:dashboard.view.manager'])
         ->name('manager.dashboard');
 
 
@@ -189,6 +202,7 @@ Route::prefix('employee/overtime')
     */
 
     Route::prefix('manager/leave')
+        ->middleware(['role:manager', 'permission:leave.review.team'])
         ->name('manager.leave.')
         ->group(function () {
 
@@ -214,6 +228,7 @@ Route::prefix('employee/overtime')
     */
 
     Route::prefix('manager/overtime')
+        ->middleware(['role:manager', 'permission:overtime.review.team'])
         ->name('manager.overtime.')
         ->group(function () {
 
@@ -239,10 +254,12 @@ Route::prefix('employee/overtime')
     */
 
     Route::get('/manager/team', [TeamController::class, 'index'])
+        ->middleware(['role:manager', 'permission:team.view'])
         ->name('manager.team.index');
 
 
     Route::prefix('manager/attendance')
+    ->middleware(['role:manager', 'permission:attendance.manage.team'])
     ->name('manager.attendance.')
     ->group(function () {
 
@@ -271,6 +288,7 @@ Route::prefix('employee/overtime')
     */
 
     Route::prefix('manager/profile')
+        ->middleware(['role:manager', 'permission:profile.update'])
         ->name('manager.profile.')
         ->group(function () {
 
@@ -292,72 +310,85 @@ Route::prefix('employee/overtime')
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('admin')
+    Route::middleware('role:admin')
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
 
             // Dashboard
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+                ->middleware('permission:dashboard.view.admin')
                 ->name('dashboard');
 
 
             // Employees
-            Route::resource('employees', EmployeeController::class)
-                ->only([
-                    'index',
-                    'store',
-                    'show',
-                    'update',
-                    'destroy',
-                ]);
+            Route::middleware('permission:employees.manage')->group(function () {
+                Route::resource('employees', EmployeeController::class)
+                    ->only([
+                        'index',
+                        'store',
+                        'show',
+                        'update',
+                        'destroy',
+                    ]);
+            });
 
 
             // Users
-            Route::resource('users', UserController::class)
-                ->only([
-                    'index',
-                    'update',
-                ]);
+            Route::middleware('permission:users.manage')->group(function () {
+                Route::resource('users', UserController::class)
+                    ->only([
+                        'index',
+                        'update',
+                    ]);
 
-            Route::post('/users/{user}/deactivate', [UserController::class, 'deactivate'])
-                ->name('users.deactivate');
+                Route::post('/users/{user}/deactivate', [UserController::class, 'deactivate'])
+                    ->name('users.deactivate');
 
-            Route::post('/users/{user}/activate', [UserController::class, 'activate'])
-                ->name('users.activate');
+                Route::post('/users/{user}/activate', [UserController::class, 'activate'])
+                    ->name('users.activate');
+            });
 
 
             // Departments
-            Route::resource('departments', DepartmentController::class)
-                ->only([
-                    'index',
-                    'store',
-                    'update',
-                    'destroy',
-                ]);
+            Route::middleware('permission:departments.manage')->group(function () {
+                Route::resource('departments', DepartmentController::class)
+                    ->only([
+                        'index',
+                        'store',
+                        'update',
+                        'destroy',
+                    ]);
+            });
 
 
             // Attendance
             Route::get('/attendance', [AdminAttendanceController::class, 'index'])
+                ->middleware('permission:attendance.view.all')
                 ->name('attendance.index');
 
             Route::get('/attendance/data', [AdminAttendanceController::class, 'data'])
+                ->middleware('permission:attendance.view.all')
                 ->name('attendance.data');
 
 
             // Leave
             Route::get('/leave', [AdminLeaveController::class, 'index'])
+                ->middleware('permission:leave.view.all')
                 ->name('leave.index');
 
             Route::get('/leave/data', [AdminLeaveController::class, 'data'])
+                ->middleware('permission:leave.view.all')
                 ->name('leave.data');
 
 
             // Overtime
             Route::get('/overtime', [AdminOvertimeController::class, 'index'])
+                ->middleware('permission:overtime.view.all')
                 ->name('overtime.index');
 
             Route::get('/overtime/data', [AdminOvertimeController::class, 'data'])
+                ->middleware('permission:overtime.view.all')
                 ->name('overtime.data');
 
 
@@ -366,6 +397,7 @@ Route::prefix('employee/overtime')
             // =================================================
 
             Route::prefix('profile')
+                ->middleware('permission:profile.update')
                 ->name('profile.')
                 ->group(function () {
 

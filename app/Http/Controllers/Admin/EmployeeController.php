@@ -27,7 +27,7 @@ class EmployeeController extends Controller
 
         $managers = Employee::with('user')
             ->whereHas('user', function ($query) {
-                $query->where('role', 'manager');
+                $query->role('manager');
             })
             ->get();
 
@@ -59,8 +59,8 @@ class EmployeeController extends Controller
                 'last_name' => $data['last_name'],
                 'email' => $data['email'],
                 'password' => $data['password'],
-                'role' => $data['role'],
             ]);
+            $user->assignRole($data['role']);
 
             return Employee::create([
                 'user_id' => $user->id,
@@ -79,7 +79,7 @@ class EmployeeController extends Controller
 
         return response()->json([
             'message' => 'Employee created successfully.',
-            'employee' => $employee,
+            'employee' => $this->employeePayload($employee),
         ], 201);
     }
 
@@ -95,7 +95,7 @@ class EmployeeController extends Controller
         ]);
 
         return response()->json([
-            'employee' => $employee,
+            'employee' => $this->employeePayload($employee),
         ]);
     }
 
@@ -116,7 +116,7 @@ class EmployeeController extends Controller
     ) {
         $data = $request->validated();
 
-        $wasManager = $employee->user->role === 'manager';
+        $wasManager = $employee->user->hasRole('manager');
         $willBeManager = $data['role'] === 'manager';
 
         DB::transaction(function () use (
@@ -130,8 +130,8 @@ class EmployeeController extends Controller
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
                 'email' => $data['email'],
-                'role' => $data['role'],
             ]);
+            $employee->user->syncRoles($data['role']);
 
             if (!empty($data['password'])) {
                 $employee->user->update([
@@ -167,7 +167,7 @@ class EmployeeController extends Controller
 
         return response()->json([
             'message' => 'Employee updated successfully.',
-            'employee' => $employee,
+            'employee' => $this->employeePayload($employee),
         ]);
     }
 
@@ -200,5 +200,16 @@ class EmployeeController extends Controller
             'message' => 'Employee deleted successfully.',
             'employee_id' => $employee->id,
         ]);
+    }
+
+    private function employeePayload(Employee $employee): array
+    {
+        $payload = $employee->toArray();
+
+        if ($employee->user) {
+            $payload['user']['role'] = $employee->user->primaryRoleName();
+        }
+
+        return $payload;
     }
 }

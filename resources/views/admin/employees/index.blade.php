@@ -166,7 +166,7 @@
                                         class="view-employee-btn rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300/60"
                                         data-id="{{ $employee->id }}" data-first-name="{{ $employee->user->first_name }}"
                                         data-last-name="{{ $employee->user->last_name }}"
-                                        data-email="{{ $employee->user->email }}" data-role="{{ $employee->user->role }}"
+                                        data-email="{{ $employee->user->email }}" data-role="{{ $employee->user->primaryRoleName() }}"
                                         data-status="{{ $employee->user->status }}"
                                         data-position="{{ $employee->position }}"
                                         data-department="{{ $employee->department->name }}"

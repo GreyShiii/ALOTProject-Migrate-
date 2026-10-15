@@ -51,7 +51,7 @@ class UserController extends Controller
             ],
         ]);
 
-        $wasManager = $user->role === 'manager';
+        $wasManager = $user->hasRole('manager');
         $willBeManager = $validated['role'] === 'manager';
 
         DB::transaction(function () use (
@@ -64,7 +64,11 @@ class UserController extends Controller
                 unset($validated['password']);
             }
 
+            $role = $validated['role'];
+            unset($validated['role']);
+
             $user->update($validated);
+            $user->syncRoles($role);
 
             if ($wasManager && !$willBeManager) {
                 $employee = $user->employee;
@@ -82,9 +86,12 @@ class UserController extends Controller
 
         $user->load('employee.department');
 
+        $userData = $user->toArray();
+        $userData['role'] = $user->primaryRoleName();
+
         return response()->json([
             'message' => 'User updated successfully.',
-            'user' => $user,
+            'user' => $userData,
         ]);
     }
 

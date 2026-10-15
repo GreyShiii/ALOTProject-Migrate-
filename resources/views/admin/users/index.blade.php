@@ -123,7 +123,7 @@
 
                         @forelse ($users as $user)
                             <tr id="user-row-{{ $user->id }}" class="transition hover:bg-gray-50"
-                                data-role="{{ $user->role }}" data-status="{{ $user->status }}">
+                                data-role="{{ $user->primaryRoleName() }}" data-status="{{ $user->status }}">
 
                                 <td class="px-3 py-4 text-center text-sm font-semibold text-gray-900">
                                     <div class="truncate">
@@ -139,12 +139,12 @@
 
                                 <td class="px-3 py-4 text-center">
 
-                                    @if ($user->role === 'admin')
+                                    @if ($user->hasRole('admin'))
                                         <span data-user-role
                                             class="inline-flex rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-700">
                                             Admin
                                         </span>
-                                    @elseif ($user->role === 'manager')
+                                    @elseif ($user->hasRole('manager'))
                                         <span data-user-role
                                             class="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
                                             Manager
@@ -231,7 +231,7 @@
 
         <div id="user-card-list" class="divide-y divide-gray-200 md:hidden">
             @forelse ($users as $user)
-                <div id="user-card-{{ $user->id }}" class="px-4 py-4" data-role="{{ $user->role }}"
+                <div id="user-card-{{ $user->id }}" class="px-4 py-4" data-role="{{ $user->primaryRoleName() }}"
                     data-status="{{ $user->status }}">
                     <div class="flex items-start justify-between gap-3">
 
@@ -267,7 +267,7 @@
                             </dt>
 
                             <dd data-user-role class="mt-1 text-gray-700">
-                                {{ ucfirst($user->role) }}
+                                {{ ucfirst($user->primaryRoleName() ?? '') }}
                             </dd>
                         </div>
 
@@ -369,7 +369,7 @@
 
                         <span
                             class="mt-1.5 inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm font-medium text-gray-700">
-                            {{ ucfirst($user->role) }}
+                            {{ ucfirst($user->primaryRoleName() ?? '') }}
                         </span>
                     </div>
 
@@ -475,15 +475,15 @@
 
                         <select name="role"
                             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30">
-                            <option value="employee" @selected($user->role === 'employee')>
+                            <option value="employee" @selected($user->hasRole('employee'))>
                                 Employee
                             </option>
 
-                            <option value="manager" @selected($user->role === 'manager')>
+                            <option value="manager" @selected($user->hasRole('manager'))>
                                 Manager
                             </option>
 
-                            <option value="admin" @selected($user->role === 'admin')>
+                            <option value="admin" @selected($user->hasRole('admin'))>
                                 Admin
                             </option>
                         </select>
