@@ -1,5 +1,6 @@
 import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
+import GuestLayout from '../../Layouts/GuestLayout';
 export default function Login({ loginUrl, logoUrl }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
@@ -12,9 +13,7 @@ export default function Login({ loginUrl, logoUrl }) {
         });
     }
     return (
-        <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
-            <Head title="Login" />
-    <div className="w-full max-w-md">
+        <GuestLayout title="Login">
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
             <div className="bg-gradient-to-br from-blue-800 to-teal-800 px-6 py-10 text-center">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center ">
@@ -106,7 +105,6 @@ export default function Login({ loginUrl, logoUrl }) {
                 </div>
             </div>
         </div>
-    </div>
-        </main>
+        </GuestLayout>
     );
 }
