@@ -9,7 +9,6 @@ use App\Http\Controllers\Admin\LeaveController as AdminLeaveController;
 use App\Http\Controllers\Admin\OvertimeController as AdminOvertimeController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 
-use App\Http\Controllers\Auth\LoginController;
 
 use App\Http\Controllers\Employee\AttendanceController as EmployeeAttendanceController;
 use App\Http\Controllers\Employee\DashboardController as EmployeeDashboardController;
@@ -43,17 +42,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest')->group(function () {
-
-    Route::get('/login', [LoginController::class, 'create'])
-        ->name('login');
-
-    Route::post('/login', [LoginController::class, 'store'])
-        ->name('login.attempt');
-
-});
-
-
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes
@@ -67,10 +55,6 @@ Route::middleware('auth')->group(function () {
     | Logout
     |--------------------------------------------------------------------------
     */
-
-    Route::post('/logout', [LoginController::class, 'destroy'])
-        ->name('logout');
-
 
     /*
     |--------------------------------------------------------------------------
