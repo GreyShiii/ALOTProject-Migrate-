@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class LeaveController extends Controller
 {
@@ -14,7 +17,12 @@ class LeaveController extends Controller
      */
     public function index()
     {
-        return view('manager.leave.index');
+        $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
+
+        return Inertia::render('Manager/Leave/Index', [
+            'leaveRequests' => $this->teamRequests($manager),
+        ]);
     }
 
     /**
@@ -23,8 +31,17 @@ class LeaveController extends Controller
     public function data()
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 404, 'Employee record not found.');
 
-        $leaveRequests = LeaveRequest::with([
+        return response()->json([
+            'success' => true,
+            'leaveRequests' => $this->teamRequests($manager),
+        ]);
+    }
+
+    private function teamRequests(Employee $manager): Collection
+    {
+        return LeaveRequest::with([
             'employee.user',
             'employee.department',
             'approver',
@@ -33,12 +50,19 @@ class LeaveController extends Controller
                 $query->where('manager_id', $manager->id);
             })
             ->latest('created_at')
-            ->get();
+            ->get()
+            ->map(fn (LeaveRequest $leave) => $this->leavePayload($leave));
+    }
 
-        return response()->json([
-            'success' => true,
-            'leaveRequests' => $leaveRequests,
-        ]);
+    private function leavePayload(LeaveRequest $leave): array
+    {
+        return [
+            ...$leave->toArray(),
+            'start_date' => $leave->start_date?->format('Y-m-d'),
+            'end_date' => $leave->end_date?->format('Y-m-d'),
+            'approveUrl' => route('manager.leave.approve', $leave),
+            'rejectUrl' => route('manager.leave.reject', $leave),
+        ];
     }
 
     /**
@@ -47,6 +71,7 @@ class LeaveController extends Controller
     public function approve(LeaveRequest $leaveRequest)
     {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $belongsToManager =
             $leaveRequest->employee &&
@@ -80,7 +105,7 @@ class LeaveController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Leave request approved successfully.',
-            'leaveRequest' => $leaveRequest,
+            'leaveRequest' => $this->leavePayload($leaveRequest),
         ]);
     }
 
@@ -92,6 +117,7 @@ class LeaveController extends Controller
         LeaveRequest $leaveRequest
     ) {
         $manager = Auth::user()->employee;
+        abort_unless($manager, 403, 'Employee record not found.');
 
         $belongsToManager =
             $leaveRequest->employee &&
@@ -133,7 +159,7 @@ class LeaveController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Leave request rejected successfully.',
-            'leaveRequest' => $leaveRequest,
+            'leaveRequest' => $this->leavePayload($leaveRequest),
         ]);
     }
 }
