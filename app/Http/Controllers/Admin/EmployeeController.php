@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
@@ -18,7 +19,7 @@ class EmployeeController extends Controller
     public function index()
     {
         $employees = Employee::with([
-            'user',
+            'user.roles',
             'department',
             'manager.user',
         ])->get();
@@ -31,10 +32,12 @@ class EmployeeController extends Controller
             })
             ->get();
 
-        return view(
-            'admin.employees.index',
-            compact('employees', 'departments', 'managers')
-        );
+        return Inertia::render('Admin/Employees/Index', [
+            'employees' => $employees->map(fn ($employee) => $this->employeePayload($employee)),
+            'departments' => $departments,
+            'managers' => $managers,
+            'actionUrl' => route('admin.employees.index'),
+        ]);
     }
 
     /**
@@ -205,6 +208,8 @@ class EmployeeController extends Controller
     private function employeePayload(Employee $employee): array
     {
         $payload = $employee->toArray();
+        // Keep calendar dates stable in both page props and JSON form responses.
+        $payload['hire_date'] = $employee->hire_date?->format('Y-m-d');
 
         if ($employee->user) {
             $payload['user']['role'] = $employee->user->primaryRoleName();
