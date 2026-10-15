@@ -57,7 +57,7 @@ class SharedLayoutTest extends TestCase
                 ->where('layout.navigation', function ($items) use ($role) {
                     return collect($items)->every(fn ($item) =>
                         str_starts_with($item['href'], url('/'.$role.'/'))
-                        && $item['inertia'] === ($item['href'] === route('manager.team.index'))
+                        && $item['inertia'] === in_array($item['href'], [route('admin.users.index'), route('manager.team.index')], true)
                     );
                 }));
     }
