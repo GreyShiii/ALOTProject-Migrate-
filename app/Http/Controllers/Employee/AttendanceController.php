@@ -12,6 +12,13 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'status' => ['nullable', 'in:working,completed,not_started'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+
         $employee = Auth::user()->employee;
         abort_unless($employee, 403, 'Employee record not found.');
 

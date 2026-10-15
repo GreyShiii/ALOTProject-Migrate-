@@ -61,7 +61,7 @@ class LeaveController extends Controller
     public function store(Request $request)
     {
         $employee = Auth::user()->employee;
-        abort_unless($employee, 404, 'Employee record not found.');
+        abort_unless($employee, 403, 'Employee record not found.');
 
         $validated = $request->validate([
             'leave_type' => 'required|in:Sick,Vacation,Emergency,Bereavement',

@@ -101,4 +101,24 @@ class AdminUsersTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'active']);
         $this->postJson(route('admin.users.deactivate', $this->admin))->assertUnprocessable();
     }
+
+    public function test_admin_cannot_change_their_own_role_or_status_from_user_edit(): void
+    {
+        $data = [
+            'first_name' => $this->admin->first_name,
+            'last_name' => $this->admin->last_name,
+            'email' => $this->admin->email,
+            'password' => '',
+            'role' => 'admin',
+            'status' => 'inactive',
+        ];
+
+        $this->putJson(route('admin.users.update', $this->admin), $data)
+            ->assertUnprocessable()->assertJsonValidationErrors('status');
+
+        $data['status'] = 'active';
+        $data['role'] = 'employee';
+        $this->putJson(route('admin.users.update', $this->admin), $data)
+            ->assertUnprocessable()->assertJsonValidationErrors('role');
+    }
 }

@@ -49,6 +49,6 @@ export default function Index({ employees, departments, managers, actionUrl, ope
                 ['Manager', nameOf(person.manager?.user)], ['Position', person.position], ['Hire date', formatDate(person.hire_date)],
             ]} />
         </Dialog>}
-        {dialog?.type === 'delete' && <ConfirmAction title={`Delete ${nameOf(person.user)}?`} description="This will permanently delete the employee and their user account." url={`${actionUrl}/${person.id}`} onClose={close} onSaved={() => saved('Employee deleted successfully.')} />}
+        {dialog?.type === 'delete' && <ConfirmAction title={`Delete ${nameOf(person.user)}?`} description="This permanently deletes the employee and their account. Employees with attendance or request history cannot be deleted; deactivate those accounts instead." url={`${actionUrl}/${person.id}`} onClose={close} onSaved={() => saved('Employee deleted successfully.')} />}
     </AdminPage>;
 }

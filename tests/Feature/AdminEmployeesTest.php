@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Attendance;
+use App\Models\LeaveRequest;
+use App\Models\OvertimeRequest;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -124,6 +127,62 @@ class AdminEmployeesTest extends TestCase
         $this->assertDatabaseMissing('employees', ['id' => $manager->id]);
         $this->assertDatabaseMissing('users', ['id' => $manager->user_id]);
         $this->assertNull($worker->fresh()->manager_id);
+    }
+
+    public function test_employee_with_history_cannot_be_deleted(): void
+    {
+        $employee = $this->employee('worker@example.com');
+        Attendance::create([
+            'employee_id' => $employee->id,
+            'date' => today(),
+            'time_in' => now(),
+        ]);
+
+        $this->deleteJson(route('admin.employees.destroy', $employee))
+            ->assertConflict();
+
+        $this->assertDatabaseHas('employees', ['id' => $employee->id]);
+        $this->assertDatabaseHas('users', ['id' => $employee->user_id]);
+    }
+
+    public function test_leave_or_overtime_history_also_prevents_employee_deletion(): void
+    {
+        $employee = $this->employee('leave-history@example.com');
+        LeaveRequest::create([
+            'employee_id' => $employee->id,
+            'leave_type' => 'Sick',
+            'start_date' => today(),
+            'end_date' => today(),
+        ]);
+
+        $this->deleteJson(route('admin.employees.destroy', $employee))->assertConflict();
+
+        $anotherEmployee = $this->employee('overtime-history@example.com');
+        OvertimeRequest::create([
+            'employee_id' => $anotherEmployee->id,
+            'date' => today(),
+            'hours' => 1,
+        ]);
+
+        $this->deleteJson(route('admin.employees.destroy', $anotherEmployee))->assertConflict();
+    }
+
+    public function test_only_users_with_the_manager_role_can_be_assigned_as_managers(): void
+    {
+        $employee = $this->employee('not-manager@example.com');
+        $data = [
+            'first_name' => 'New', 'last_name' => 'Person', 'email' => 'new-person@example.com',
+            'password' => 'test-password', 'role' => 'employee', 'department_id' => $this->department->id,
+            'manager_id' => $employee->id, 'position' => 'Analyst', 'hire_date' => null,
+        ];
+
+        $this->postJson(route('admin.employees.store'), $data)
+            ->assertUnprocessable()->assertJsonValidationErrors('manager_id');
+
+        $this->putJson(route('admin.employees.update', $employee), [
+            ...$this->formData($employee),
+            'manager_id' => $employee->id,
+        ])->assertUnprocessable()->assertJsonValidationErrors('manager_id');
     }
 
     public function test_employee_management_permission_is_required(): void

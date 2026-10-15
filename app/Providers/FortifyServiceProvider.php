@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Responses\Auth\LoginResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -19,6 +20,7 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
+        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(
@@ -43,7 +45,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::authenticateUsing(function (Request $request): ?User {
             $user = User::where('email', $request->input('email'))->first();
 
-            if (! $user || ! $user->isActive()) {
+            if (! $user || ! $user->isActive() || ! $user->hasAnyRole(['admin', 'manager', 'employee'])) {
                 return null;
             }
 

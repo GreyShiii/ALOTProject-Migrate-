@@ -62,6 +62,20 @@ class UserController extends Controller
             ],
         ]);
 
+        if (Auth::id() === $user->id && $validated['role'] !== 'admin') {
+            return response()->json([
+                'message' => 'You cannot change your own role.',
+                'errors' => ['role' => ['You cannot change your own role.']],
+            ], 422);
+        }
+
+        if (Auth::id() === $user->id && $validated['status'] !== 'active') {
+            return response()->json([
+                'message' => 'You cannot deactivate your own account.',
+                'errors' => ['status' => ['You cannot deactivate your own account.']],
+            ], 422);
+        }
+
         $wasManager = $user->hasRole('manager');
         $willBeManager = $validated['role'] === 'manager';
 
