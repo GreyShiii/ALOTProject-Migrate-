@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import ManagerLayout from '../../../Layouts/ManagerLayout';
 import useApiForm from '../../../Components/Admin/useApiForm';
-import { Badge, Button, DataTable, DateFilter, Details, Dialog, Field, Filters, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, DataTable, DateFilter, Details, Dialog, Field, Filters, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
 
 function ReviewDialog({ request, action, onClose, onSaved }) {
     const rejecting = action === 'reject';
@@ -43,7 +43,9 @@ export default function Index({ overtimeRequests }) {
     const close = () => setDialog(null);
     const request = dialog?.request;
     useEffect(() => {
-        const id = new URL(url, 'http://localhost').searchParams.get('request');
+        const params = new URL(url, 'http://localhost').searchParams;
+        if (params.has('status')) setStatus(params.get('status'));
+        const id = params.get('request');
         const selected = overtimeRequests.find((row) => String(row.id) === id);
         if (selected) setDialog({ type: 'view', request: selected });
     }, [url]);
@@ -60,8 +62,7 @@ export default function Index({ overtimeRequests }) {
     }
 
     return <ManagerLayout title="Overtime Requests" breadcrumbParent="Manager" breadcrumbCurrent="Overtime Requests">
-        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Overtime Requests</h1>
-            <p className="mt-1 text-sm text-gray-500">Review overtime requests from your assigned employees.</p></div>
+        <PageHeader title="Overtime Requests" description="Review overtime requests from your assigned employees." />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <Panel title="Team Overtime Requests" description="Approve or reject pending overtime requests.">
             <Filters>

@@ -1,6 +1,7 @@
 import React, { Children, isValidElement, useEffect, useId, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 import AppLayout from '../../Layouts/AppLayout';
+import LayoutIcon from '../LayoutIcon';
 import useApiForm from './useApiForm';
 
 export const inputClass = 'w-full min-h-11 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-base sm:text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20';
@@ -13,22 +14,41 @@ export function formatDate(value) {
     return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function surfaceIcon(title = '') {
+    const text = title.toLowerCase();
+    if (text.includes('attendance')) return 'attendance';
+    if (text.includes('leave')) return 'leave';
+    if (text.includes('overtime')) return 'overtime';
+    if (text.includes('department')) return 'departments';
+    if (text.includes('profile') || text.includes('password')) return 'profile';
+    if (text.includes('employee') || text.includes('team')) return 'people';
+    if (text.includes('user')) return 'users';
+    return 'dashboard';
+}
+
+export function PageHeader({ title, description, action }) {
+    return <header className="mb-7 flex flex-wrap items-center justify-between gap-5 rounded-xl bg-blue-100/50 p-5 sm:p-7">
+        <div className="flex min-w-0 flex-1 items-start gap-4">
+            <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-navy text-white sm:flex"><LayoutIcon name={surfaceIcon(title)} className="h-6 w-6" /></div>
+            <div className="min-w-0"><h1 className="text-2xl font-semibold tracking-tight text-brand-navy sm:text-3xl">{title}</h1>
+                {description && <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">{description}</p>}</div>
+        </div>
+        {action && <div className="flex shrink-0 flex-wrap gap-3">{action}</div>}
+    </header>;
+}
+
 export function AdminPage({ title, description, children, action, notice }) {
     return <AppLayout title={title} breadcrumbParent="Management" breadcrumbCurrent={title}>
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <div><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
-                {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}</div>
-            {action}
-        </div>
+        <PageHeader title={title} description={description} action={action} />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{notice}</div>}
         <div className="space-y-6">{children}</div>
     </AppLayout>;
 }
 
 export function Panel({ title, description, children }) {
-    return <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    return <section className="overflow-hidden rounded-xl bg-white shadow-[0_4px_24px_-12px_rgba(24,49,83,0.22)]">
         {title && <div className="border-b border-gray-200 px-5 py-5 sm:px-6">
-            <h2 className="text-base font-semibold text-brand-navy">{title}</h2>
+            <div className="flex items-center gap-3"><LayoutIcon name={surfaceIcon(title)} className="h-5 w-5 shrink-0 text-blue-700" /><h2 className="text-base font-semibold text-brand-navy">{title}</h2></div>
             {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
         </div>}
         {children}
@@ -36,7 +56,7 @@ export function Panel({ title, description, children }) {
 }
 
 export function Button({ children, variant = 'primary', className = '', type = 'button', ...props }) {
-    const colors = { primary: 'bg-brand-action text-white hover:bg-blue-800', secondary: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50', danger: 'bg-red-600 text-white hover:bg-red-700' };
+    const colors = { primary: 'bg-brand-action text-white hover:bg-brand-hover', secondary: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50', danger: 'bg-red-600 text-white hover:bg-red-700' };
     return <button type={type} {...props} className={`inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${colors[variant]} ${className}`}>{children}</button>;
 }
 
@@ -45,7 +65,7 @@ export function Badge({ value }) {
     const color = ['active', 'approved', 'completed'].includes(status) ? 'bg-green-50 text-green-700'
         : ['rejected', 'inactive'].includes(status) ? 'bg-red-50 text-red-700'
             : ['pending', 'working'].includes(status) ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-600';
-    return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${color}`}>{value || 'N/A'}</span>;
+    return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${color}`}><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />{value || 'N/A'}</span>;
 }
 
 export function Filters({ children }) {

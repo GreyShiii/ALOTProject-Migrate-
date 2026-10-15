@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import AppLayout from '../../../Layouts/AppLayout';
 import LayoutIcon from '../../../Components/LayoutIcon';
 import useApiForm from '../../../Components/Admin/useApiForm';
-import { Badge, Button, DataTable, Details, Dialog, Field, Filters, FormActions, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, DataTable, Details, Dialog, Field, Filters, FormActions, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
 
 function OvertimeEditor({ storeUrl, onClose, onSaved }) {
     const form = useApiForm({ date: '', hours: '', reason: '' });
@@ -49,11 +49,7 @@ export default function Index({ overtimeRequests, pendingCount, approvedCount, a
     }
 
     return <AppLayout title="My Overtime" breadcrumbParent="Employee" breadcrumbCurrent="My Overtime">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Overtime</h1>
-                <p className="mt-1 text-sm text-gray-500">Submit and track your overtime requests.</p></div>
-            {canCreate && <Button disabled={refreshing} onClick={() => setCreating(true)}>Request overtime</Button>}
-        </div>
+        <PageHeader title="My Overtime" description="Submit and track your overtime requests." action={canCreate && <Button disabled={refreshing} onClick={() => setCreating(true)}>Request overtime</Button>} />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {cards.map((card) => <section key={card.label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">

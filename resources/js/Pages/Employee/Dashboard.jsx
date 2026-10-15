@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '../../Layouts/AppLayout';
+import LayoutIcon from '../../Components/LayoutIcon';
 import useApiForm from '../../Components/Admin/useApiForm';
-import { Badge, Button, DataTable, FormErrors, Panel } from '../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, DataTable, FormErrors, Panel } from '../../Components/Admin/Ui';
 
 function DashboardLink({ href, children, className }) {
     const { layout } = usePage().props;
@@ -33,8 +34,7 @@ export default function Dashboard({ attendance, todayLabel, pendingLeaveCount, p
     }
 
     return <AppLayout title="Employee Dashboard" breadcrumbParent="Employee" breadcrumbCurrent="Dashboard">
-        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Employee Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-500">Record your attendance and track your requests.</p></div>
+        <PageHeader title="Employee Dashboard" description="Record your attendance and track your requests." />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <FormErrors form={form} />
         <section aria-label="Today's attendance" className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -68,8 +68,10 @@ export default function Dashboard({ attendance, todayLabel, pendingLeaveCount, p
                 ['Request Leave', links.leave, 'Submit and manage your leave requests.'],
                 ['Request Overtime', links.overtime, 'Submit and manage your overtime requests.'],
             ].map(([label, href, description]) => <DashboardLink key={label} href={href}
-                className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-                <h2 className="font-semibold">{label} &rarr;</h2><p className="mt-1 text-sm text-gray-500">{description}</p>
+                className="group flex items-center gap-4 rounded-xl bg-white p-5 shadow-[0_4px_24px_-12px_rgba(24,49,83,0.22)] transition-colors hover:bg-blue-50 focus-visible:bg-blue-50">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-800"><LayoutIcon name={href === links.leave ? 'leave' : 'overtime'} className="h-6 w-6" /></span>
+                <div className="min-w-0 flex-1"><h2 className="font-semibold text-brand-navy">{label}</h2><p className="mt-1 text-sm leading-6 text-gray-600">{description}</p></div>
+                <LayoutIcon name="chevron" className="h-5 w-5 shrink-0 text-blue-700 transition-transform group-hover:translate-x-1 motion-reduce:transform-none" />
             </DashboardLink>)}
         </div>
         <Panel title="Recent Requests" description="Your five most recent leave and overtime requests.">

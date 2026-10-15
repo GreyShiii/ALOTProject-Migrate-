@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ManagerLayout from '../../../Layouts/ManagerLayout';
 import useApiForm from '../../../Components/Admin/useApiForm';
-import { Badge, Button, Details, Dialog, Field, FormActions, FormErrors, formatDate, nameOf, Panel, refreshPage } from '../../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, Details, Dialog, Field, FormActions, FormErrors, formatDate, nameOf, Panel, refreshPage } from '../../../Components/Admin/Ui';
 
 function PasswordField({ form, name, label, ...props }) {
     const [visible, setVisible] = useState(false);
@@ -37,8 +37,7 @@ export default function Index({ user, employee, actionUrl, passwordUrl }) {
     const [passwordOpen, setPasswordOpen] = useState(false);
 
     return <ManagerLayout title="Profile" breadcrumbParent="Manager" breadcrumbCurrent="Profile">
-        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Profile</h1>
-            <p className="mt-1 text-sm text-gray-500">Your personal, employment and account information.</p></div>
+        <PageHeader title="Profile" description="Your personal, employment and account information." />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Panel title="Personal Information">

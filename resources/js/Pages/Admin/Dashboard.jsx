@@ -15,6 +15,7 @@ export default function Dashboard({ totalEmployees, totalManagers, totalDepartme
                     <div key={label} className={`rounded-lg p-4 ${color}`}><p className="text-sm font-medium">{label}</p><p className="mt-2 text-3xl font-bold">{value}</p></div>)}
             </div>
         </Panel>
+        <div className="grid items-start gap-6 2xl:grid-cols-[1.15fr_1fr]">
         <Panel title="Recent Requests" description="Latest leave and overtime requests.">
             <DataTable rows={recentRequests} empty="No recent requests." columns={[
                 { key: 'employee', label: 'Employee', render: (row) => <div>
@@ -34,5 +35,6 @@ export default function Dashboard({ totalEmployees, totalManagers, totalDepartme
                 { key: 'hire_date', label: 'Hire date', render: (row) => formatDate(row.hire_date) },
             ]} />
         </Panel>
+        </div>
     </AdminPage>;
 }

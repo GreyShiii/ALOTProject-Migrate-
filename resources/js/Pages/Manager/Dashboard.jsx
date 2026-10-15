@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import ManagerLayout from '../../Layouts/ManagerLayout';
-import { DataTable, formatDate, nameOf, Panel } from '../../Components/Admin/Ui';
+import { PageHeader, DataTable, formatDate, nameOf, Panel } from '../../Components/Admin/Ui';
 
 function DashboardLink({ href, children, className }) {
     const { layout } = usePage().props;
@@ -15,10 +15,7 @@ export default function Dashboard({ pendingLeaveCount, pendingOvertimeCount, tea
     const pendingLink = (href) => `${href}?status=pending`;
 
     return <ManagerLayout title="Manager Dashboard" breadcrumbParent="Manager" breadcrumbCurrent="Dashboard">
-        <div className="mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Manager Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-500">Review your team's requests and monitor current activity.</p>
-        </div>
+        <PageHeader title="Manager Dashboard" description="Review your team's requests and monitor current activity." />
         <section aria-labelledby="review-heading" className="mb-8 rounded-xl bg-brand-navy p-5 text-white sm:p-7">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
                 <div className="max-w-xl">

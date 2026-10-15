@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import ManagerLayout from '../../../Layouts/ManagerLayout';
 import useApiForm from '../../../Components/Admin/useApiForm';
-import { Badge, Button, DataTable, DateFilter, Details, Dialog, Field, Filters, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, DataTable, DateFilter, Details, Dialog, Field, Filters, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
 
 const leaveDays = (request) => Math.round((Date.parse(request.end_date) - Date.parse(request.start_date)) / 86400000) + 1;
 
@@ -46,7 +46,9 @@ export default function Index({ leaveRequests }) {
     const close = () => setDialog(null);
     const request = dialog?.request;
     useEffect(() => {
-        const id = new URL(url, 'http://localhost').searchParams.get('request');
+        const params = new URL(url, 'http://localhost').searchParams;
+        if (params.has('status')) setStatus(params.get('status'));
+        const id = params.get('request');
         const selected = leaveRequests.find((row) => String(row.id) === id);
         if (selected) setDialog({ type: 'view', request: selected });
     }, [url]);
@@ -63,8 +65,7 @@ export default function Index({ leaveRequests }) {
     }
 
     return <ManagerLayout title="Leave Requests" breadcrumbParent="Manager" breadcrumbCurrent="Leave Requests">
-        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Leave Requests</h1>
-            <p className="mt-1 text-sm text-gray-500">Review leave requests from your assigned employees.</p></div>
+        <PageHeader title="Leave Requests" description="Review leave requests from your assigned employees." />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <Panel title="Team Leave Requests" description="Approve or reject pending requests from your team.">
             <Filters>

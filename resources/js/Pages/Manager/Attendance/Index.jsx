@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import axios from 'axios';
 import ManagerLayout from '../../../Layouts/ManagerLayout';
 import useApiForm from '../../../Components/Admin/useApiForm';
-import { Badge, Button, DataTable, DateFilter, Filters, FormErrors, formatDate, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, DataTable, DateFilter, Filters, FormErrors, formatDate, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
 
 const statusOf = (row) => row?.time_in ? (row.time_out ? 'completed' : 'working') : 'not_started';
 const statusLabel = (row) => statusOf(row).replace('_', ' ');
@@ -106,8 +106,7 @@ export default function Index({ todayAttendance, todayLabel, timezone, links }) 
     }
 
     return <ManagerLayout title="Attendance" breadcrumbParent="Manager" breadcrumbCurrent="Attendance">
-        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Attendance</h1>
-            <p className="mt-1 text-sm text-gray-500">Record your attendance and monitor your team's attendance.</p></div>
+        <PageHeader title="Attendance" description="Record your attendance and monitor your team's attendance." />
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <FormErrors form={form} />
         <div className="space-y-6">

@@ -9,13 +9,14 @@ export default function Login({ loginUrl, logoUrl }) {
     });
     function submit(event) {
         event.preventDefault();
+        if (processing) return;
         post(loginUrl, {
             onFinish: () => reset('password'),
         });
     }
     return (
         <GuestLayout title="Login" wide>
-        <div className="login-surface grid overflow-hidden rounded-2xl bg-white shadow-[0_24px_70px_-24px_rgba(20,46,86,0.35)] lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="login-surface grid overflow-hidden rounded-2xl bg-white shadow-[0_24px_70px_-24px_rgba(24,49,83,0.25)] lg:grid-cols-[0.95fr_1.05fr]">
             <aside aria-label="About ALOT" className="flex flex-col justify-between bg-brand-navy px-7 py-8 text-white sm:px-10 lg:p-12">
                 <div className="flex items-center gap-3">
                     <img src={logoUrl} alt="ALOT Logo" className="h-12 w-12 rounded-xl object-contain" />
@@ -23,7 +24,7 @@ export default function Login({ loginUrl, logoUrl }) {
                 </div>
                 <div className="pt-5 lg:py-16">
                     <h1 className="text-2xl font-semibold leading-[1.15] tracking-tight sm:text-3xl lg:text-5xl">
-                        Attendance.<br className="hidden lg:block" />{' '}Leave.<br className="hidden lg:block" />{' '}<span className="text-brand-highlight">Overtime.</span>
+                        Apex<br className="hidden lg:block" />{' '}Logistics &<br className="hidden lg:block" />{' '}<span className="text-brand-highlight"> Operations Technology</span>
                     </h1>
                     <p className="mt-3 text-sm leading-6 text-blue-100 lg:mt-5 lg:max-w-xs">Attendance, Leave &amp; Overtime Tracker</p>
                 </div>
@@ -89,7 +90,7 @@ export default function Login({ loginUrl, logoUrl }) {
                         </div>
                     </div>
                     <button type="submit" disabled={processing}
-                        className="flex w-full items-center justify-center gap-2 min-h-12 rounded-lg bg-brand-action px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        className="flex w-full items-center justify-center gap-2 min-h-12 rounded-lg bg-brand-action px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover disabled:cursor-wait disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         {processing ? 'Signing in...' : 'Sign in'}
                         <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />

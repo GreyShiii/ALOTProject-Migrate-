@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AppLayout from '../../../Layouts/AppLayout';
-import { Badge, Button, DataTable, DateFilter, Filters, formatDate, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
+import { PageHeader, Badge, Button, DataTable, DateFilter, Filters, formatDate, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
 
 function formatTime(value, timezone) {
     if (!value) return 'N/A';
@@ -49,8 +49,7 @@ export default function Index({ filters: initialFilters, dataUrl, timezone }) {
     }
 
     return <AppLayout title="Attendance" breadcrumbParent="Employee" breadcrumbCurrent="Attendance">
-        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Attendance</h1>
-            <p className="mt-1 text-sm text-gray-500">Review your personal attendance history.</p></div>
+        <PageHeader title="Attendance" description="Review your personal attendance history." />
         <Panel title="Attendance History" description="Your daily time in, time out, and total hours.">
             <Filters>
                 <Search value={filters.search} onChange={(value) => filter('search', value)} placeholder="Search date (YYYY-MM-DD or Oct 15, 2026)" />
