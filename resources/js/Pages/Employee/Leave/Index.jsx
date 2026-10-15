@@ -58,7 +58,7 @@ export default function Index({ leaves, pendingCount, approvedCount, rejectedCou
 
     return <AppLayout title="My Leave" breadcrumbParent="Employee" breadcrumbCurrent="My Leave">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div><h1 className="text-xl font-bold tracking-tight sm:text-2xl">My Leave</h1>
+            <div><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Leave</h1>
                 <p className="mt-1 text-sm text-gray-500">Submit and track your leave requests.</p></div>
             {canCreate && <Button disabled={refreshing} onClick={() => setCreating(true)}>Request leave</Button>}
         </div>

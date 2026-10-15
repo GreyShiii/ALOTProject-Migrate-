@@ -106,20 +106,20 @@ export default function Index({ todayAttendance, todayLabel, timezone, links }) 
     }
 
     return <ManagerLayout title="Attendance" breadcrumbParent="Manager" breadcrumbCurrent="Attendance">
-        <div className="mb-6"><h1 className="text-xl font-bold tracking-tight sm:text-2xl">Attendance</h1>
+        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Attendance</h1>
             <p className="mt-1 text-sm text-gray-500">Record your attendance and monitor your team's attendance.</p></div>
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <FormErrors form={form} />
         <div className="space-y-6">
-            <section aria-label="Today's attendance" className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                <div className="bg-gradient-to-r from-[#11458c] to-teal-600 px-5 py-6 text-white">
+            <section aria-label="Today's attendance" className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <div className="bg-brand-navy px-5 py-6 text-white">
                     <p className="text-sm font-semibold uppercase tracking-wide">Today's Attendance</p><h2 className="mt-2 text-2xl font-bold sm:text-3xl">{todayLabel}</h2>
                 </div>
                 <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
                     {[
                         ['Status', <Badge value={statusLabel(todayAttendance)} />], ['Time in', formatTime(todayAttendance?.time_in, timezone)],
                         ['Time out', formatTime(todayAttendance?.time_out, timezone)], ['Total hours', totalHours(todayAttendance)],
-                    ].map(([label, value]) => <div key={label} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    ].map(([label, value]) => <div key={label} className="min-w-0 border-b border-gray-200 pb-4 sm:border-b-0 sm:border-r sm:px-4 sm:last:border-r-0">
                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p><div className="mt-2 text-lg font-semibold">{value}</div>
                     </div>)}
                 </div>

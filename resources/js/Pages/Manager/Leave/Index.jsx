@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
 import ManagerLayout from '../../../Layouts/ManagerLayout';
 import useApiForm from '../../../Components/Admin/useApiForm';
 import { Badge, Button, DataTable, DateFilter, Details, Dialog, Field, Filters, FormErrors, formatDate, matchesSearch, nameOf, Panel, Search, SelectFilter } from '../../../Components/Admin/Ui';
@@ -18,7 +18,8 @@ function ReviewDialog({ request, action, onClose, onSaved }) {
             <FormErrors form={form} />
             <Details items={[
                 ['Employee', nameOf(request.employee?.user)], ['Leave type', request.leave_type],
-                ['Dates', `${formatDate(request.start_date)} – ${formatDate(request.end_date)}`], ['Days', leaveDays(request)],
+                ['Department', request.employee?.department?.name], ['Reason', request.reason || 'No reason provided.'],
+                ['Dates', `${formatDate(request.start_date)} – ${formatDate(request.end_date)}`], ['Calendar days', leaveDays(request)],
             ]} />
             {rejecting ? <fieldset disabled={form.processing} className="mt-5">
                 <Field form={form} name="rejection_reason" label="Rejection reason" type="textarea" rows={4} maxLength={500} required />
@@ -34,14 +35,21 @@ function ReviewDialog({ request, action, onClose, onSaved }) {
 }
 
 export default function Index({ leaveRequests }) {
+    const { url } = usePage();
+    const query = new URL(url, 'http://localhost').searchParams;
     const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('');
+    const [status, setStatus] = useState(() => query.get('status') || 'pending');
     const [date, setDate] = useState('');
     const [dialog, setDialog] = useState(null);
     const [notice, setNotice] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const close = () => setDialog(null);
     const request = dialog?.request;
+    useEffect(() => {
+        const id = new URL(url, 'http://localhost').searchParams.get('request');
+        const selected = leaveRequests.find((row) => String(row.id) === id);
+        if (selected) setDialog({ type: 'view', request: selected });
+    }, [url]);
     const rows = leaveRequests.filter((row) =>
         matchesSearch(search, nameOf(row.employee?.user), row.employee?.user?.email, row.employee?.department?.name, row.leave_type, row.reason)
         && (!status || row.status?.toLowerCase() === status)
@@ -55,7 +63,7 @@ export default function Index({ leaveRequests }) {
     }
 
     return <ManagerLayout title="Leave Requests" breadcrumbParent="Manager" breadcrumbCurrent="Leave Requests">
-        <div className="mb-6"><h1 className="text-xl font-bold tracking-tight sm:text-2xl">Leave Requests</h1>
+        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Leave Requests</h1>
             <p className="mt-1 text-sm text-gray-500">Review leave requests from your assigned employees.</p></div>
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <Panel title="Team Leave Requests" description="Approve or reject pending requests from your team.">
@@ -64,21 +72,18 @@ export default function Index({ leaveRequests }) {
                 <SelectFilter label="All statuses" value={status} onChange={setStatus} options={[
                     ['pending', 'Pending'], ['approved', 'Approved'], ['rejected', 'Rejected'],
                 ]} />
-                <DateFilter value={date} onChange={setDate} />
+                <DateFilter label="Absent on" value={date} onChange={setDate} />
+                {(search || status || date) && <Button variant="secondary" onClick={() => { setSearch(''); setStatus(''); setDate(''); }}>Clear filters</Button>}
             </Filters>
-            <DataTable key={`${search}:${status}:${date}`} rows={rows} empty="No leave requests match your filters." columns={[
+            <DataTable key={`${search}:${status}:${date}`} rows={rows} empty={leaveRequests.length ? 'No matching requests. Change or clear your filters to see more.' : 'No leave requests have been submitted by your team yet.'} columns={[
                 { key: 'employee', label: 'Employee', render: (row) => <div><p className="font-semibold">{nameOf(row.employee?.user)}</p><p className="mt-1 text-xs text-gray-500">{row.employee?.department?.name || 'N/A'}</p></div> },
                 { key: 'leave_type', label: 'Type' },
                 { key: 'dates', label: 'Dates', render: (row) => `${formatDate(row.start_date)} – ${formatDate(row.end_date)}` },
-                { key: 'days', label: 'Days', render: leaveDays },
+                { key: 'days', label: 'Calendar days', render: leaveDays },
                 { key: 'submitted', label: 'Submitted', render: (row) => formatDate(row.created_at) },
                 { key: 'status', label: 'Status', render: (row) => <Badge value={row.status} /> },
                 { key: 'actions', label: 'Actions', render: (row) => <div className="flex flex-wrap gap-2">
-                    <Button variant="secondary" disabled={refreshing} onClick={() => setDialog({ type: 'view', request: row })}>View details</Button>
-                    {row.status === 'Pending' && <>
-                        <Button disabled={refreshing} onClick={() => setDialog({ type: 'approve', request: row })}>Approve</Button>
-                        <Button variant="danger" disabled={refreshing} onClick={() => setDialog({ type: 'reject', request: row })}>Reject</Button>
-                    </>}
+                    <Button variant={row.status === 'Pending' ? 'primary' : 'secondary'} disabled={refreshing} onClick={() => setDialog({ type: 'view', request: row })}>{row.status === 'Pending' ? 'Review request' : 'View details'}</Button>
                 </div> },
             ]} />
         </Panel>
@@ -87,11 +92,17 @@ export default function Index({ leaveRequests }) {
                 ['Employee', nameOf(request.employee?.user)], ['Email', request.employee?.user?.email],
                 ['Department', request.employee?.department?.name], ['Position', request.employee?.position],
                 ['Leave type', request.leave_type], ['Start date', formatDate(request.start_date)],
-                ['End date', formatDate(request.end_date)], ['Days', leaveDays(request)],
+                ['End date', formatDate(request.end_date)], ['Calendar days', leaveDays(request)],
                 ['Reason', request.reason || 'No reason provided.'], ['Status', <Badge value={request.status} />],
-                ['Submitted', formatDate(request.created_at)], ['Reviewed by', nameOf(request.approver)],
-                ['Review date', formatDate(request.approval_date)], ['Rejection reason', request.rejection_reason || 'N/A'],
+                ['Submitted', formatDate(request.created_at)],
+                ...(request.status !== 'Pending' ? [['Reviewed by', nameOf(request.approver)], ['Review date', formatDate(request.approval_date)]] : []),
+                ...(request.status === 'Rejected' ? [['Rejection reason', request.rejection_reason || 'No reason recorded.']] : []),
             ]} />
+            {request.status === 'Pending' && <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-gray-200 pt-5">
+                <Button variant="secondary" disabled={refreshing} onClick={close}>Close</Button>
+                <Button variant="danger" disabled={refreshing} onClick={() => setDialog({ type: 'reject', request })}>Reject</Button>
+                <Button disabled={refreshing} onClick={() => setDialog({ type: 'approve', request })}>Approve</Button>
+            </div>}
         </Dialog>}
         {['approve', 'reject'].includes(dialog?.type) && <ReviewDialog key={`${dialog.type}:${request.id}`} request={request} action={dialog.type} onClose={close} onSaved={saved} />}
     </ManagerLayout>;

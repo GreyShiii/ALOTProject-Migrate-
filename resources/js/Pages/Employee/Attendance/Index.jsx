@@ -49,7 +49,7 @@ export default function Index({ filters: initialFilters, dataUrl, timezone }) {
     }
 
     return <AppLayout title="Attendance" breadcrumbParent="Employee" breadcrumbCurrent="Attendance">
-        <div className="mb-6"><h1 className="text-xl font-bold tracking-tight sm:text-2xl">Attendance</h1>
+        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Attendance</h1>
             <p className="mt-1 text-sm text-gray-500">Review your personal attendance history.</p></div>
         <Panel title="Attendance History" description="Your daily time in, time out, and total hours.">
             <Filters>

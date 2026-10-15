@@ -3,10 +3,10 @@ import { AdminPage, Badge, DataTable, formatDate, nameOf, Panel } from '../../Co
 
 export default function Dashboard({ totalEmployees, totalManagers, totalDepartments, workingEmployees, completedEmployees, employeesOnLeave, recentEmployees, recentRequests }) {
     return <AdminPage title="Admin Dashboard" description="Overview of employees, departments, attendance, and requests.">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 divide-y divide-gray-200 rounded-xl bg-brand-navy text-white sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:divide-brand-line">
             {[['Total Employees', totalEmployees], ['Total Managers', totalManagers], ['Total Departments', totalDepartments]].map(([label, value]) =>
-                <div key={label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <p className="text-sm font-medium text-gray-500">{label}</p><p className="mt-2 text-3xl font-bold">{value}</p>
+                <div key={label} className="px-6 py-6">
+                    <p className="text-sm font-medium text-blue-100">{label}</p><p className="mt-2 text-3xl font-semibold tabular-nums">{value}</p>
                 </div>)}
         </div>
         <Panel title="Attendance Overview" description="Today's attendance across the organization.">

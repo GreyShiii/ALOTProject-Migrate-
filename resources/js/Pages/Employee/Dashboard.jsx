@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '../../Layouts/AppLayout';
-import LayoutIcon from '../../Components/LayoutIcon';
 import useApiForm from '../../Components/Admin/useApiForm';
 import { Badge, Button, DataTable, FormErrors, Panel } from '../../Components/Admin/Ui';
 
@@ -34,19 +33,19 @@ export default function Dashboard({ attendance, todayLabel, pendingLeaveCount, p
     }
 
     return <AppLayout title="Employee Dashboard" breadcrumbParent="Employee" breadcrumbCurrent="Dashboard">
-        <div className="mb-6"><h1 className="text-xl font-bold tracking-tight sm:text-2xl">Employee Dashboard</h1>
+        <div className="mb-6"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Employee Dashboard</h1>
             <p className="mt-1 text-sm text-gray-500">Record your attendance and track your requests.</p></div>
         {notice && <div role="status" className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</div>}
         <FormErrors form={form} />
-        <section aria-label="Today's attendance" className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div className="bg-gradient-to-r from-[#11458c] to-teal-600 px-5 py-6 text-white">
+        <section aria-label="Today's attendance" className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div className="bg-brand-navy px-5 py-6 text-white">
                 <p className="text-sm font-semibold uppercase tracking-wide">Today's Attendance</p><h2 className="mt-2 text-2xl font-bold sm:text-3xl">{todayLabel}</h2>
             </div>
             <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4">
                 {[
                     ['Status', <Badge value={status.replace('_', ' ')} />], ['Time in', attendance.time_in || 'N/A'],
                     ['Time out', attendance.time_out || 'N/A'], ['Total hours', attendance.total_hours || 'N/A'],
-                ].map(([label, value]) => <div key={label} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                ].map(([label, value]) => <div key={label} className="min-w-0 border-b border-gray-200 pb-4 sm:border-b-0 sm:border-r sm:px-4 sm:last:border-r-0">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p><div className="mt-2 text-lg font-semibold">{value}</div>
                 </div>)}
             </div>
@@ -57,15 +56,13 @@ export default function Dashboard({ attendance, todayLabel, pendingLeaveCount, p
                     </Button>}
             </div>
         </section>
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {cards.map((card) => <section key={card.label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                    <div><h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">{card.label}</h2>
-                        <p className="mt-2 text-3xl font-bold">{card.value}</p></div>
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${card.color}`}><LayoutIcon name={card.icon} /></div>
-                </div><p className="mt-4 text-xs text-gray-500">{card.description}</p>
-            </section>)}
-        </div>
+        <section aria-label="Request summary" className="mb-6 grid grid-cols-2 gap-y-5 border-y border-gray-200 py-5 lg:grid-cols-4">
+            {cards.map((card) => <div key={card.label} className="min-w-0 px-4">
+                <p className="text-sm font-medium text-gray-600">{card.label}</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">{card.value}</p>
+                <p className="mt-1 text-xs text-gray-500">{card.description}</p>
+            </div>)}
+        </section>
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {[
                 ['Request Leave', links.leave, 'Submit and manage your leave requests.'],
@@ -80,7 +77,7 @@ export default function Dashboard({ attendance, todayLabel, pendingLeaveCount, p
                 { key: 'type', label: 'Request type' }, { key: 'date', label: 'Date' }, { key: 'reason', label: 'Reason' },
                 { key: 'submitted', label: 'Submitted' }, { key: 'status', label: 'Status', render: (row) => <Badge value={row.status} /> },
                 { key: 'actions', label: 'Action', render: (row) => <DashboardLink href={row.route}
-                    className="inline-flex rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">View</DashboardLink> },
+                    className="inline-flex min-h-11 items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">View</DashboardLink> },
             ]} />
         </Panel>
     </AppLayout>;
